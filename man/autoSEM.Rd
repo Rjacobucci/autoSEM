@@ -4,9 +4,9 @@
 \alias{autoSEM}
 \title{This function houses a number of different heuristic optimization algorithms for specification search.}
 \usage{
-autoSEM(method = "tabuSearch", nfac = NULL, varList = NULL,
+autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
   criterion = "BIC", minInd = 3, stdlv = TRUE, orth = TRUE,
-  niter = 30)
+  niter = 30, parallel = "no", replaceSamp = FALSE)
 }
 \arguments{
 \item{method}{which optimization algorithm to use}

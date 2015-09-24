@@ -8,9 +8,29 @@
 #' autoSEM()
 #'
 #'
-autoSEM <- function(method="tabuSearch",nfac=NULL,varList=NULL,
-                    criterion="BIC",minInd=3,stdlv=TRUE,orth=TRUE,
-                    niter=30){
+autoSEM <- function(method="tabuSearch",
+                    data=NULL,
+                    nfac=NULL,
+                    varList=NULL,
+                    criterion="BIC",
+                    minInd=3,
+                    stdlv=TRUE,
+                    orth=TRUE,
+                    niter=30,
+                    parallel="no",
+                    replaceSamp=FALSE){
+
+  if(replaceSamp==FALSE){
+    ids = sample(nrow(data),nrow(data)/2)
+    data_train = data[ids,]
+    data_test = data[-ids,]
+  }else if(replaceSamp==TRUE){
+    ids = sample(nrow(data),nrow(data),replace=TRUE)
+    ids2 = sample(nrow(data),nrow(data),replace=TRUE)
+    data_train = data[ids,]
+    data_test = data[ids2,]
+  }
+
 
   fitness <- function(string) {
 
@@ -32,7 +52,7 @@ autoSEM <- function(method="tabuSearch",nfac=NULL,varList=NULL,
         if(method=="GA"){
           return(-99999999)
         }else if(method=="tabuSearch"){
-          return(1)
+          return(0)
         }
       }
     }
@@ -50,38 +70,39 @@ autoSEM <- function(method="tabuSearch",nfac=NULL,varList=NULL,
 
     p = length(unique(unlist(varList)))
 
-    outt = lavaan::cfa(fmld,myData,orthogonal=orth,std.lv=stdlv)
+    outt = lavaan::cfa(fmld,data_train,orthogonal=orth,std.lv=stdlv)
 
     if(inspect(outt,"converged")==F | any(eigen(inspect(outt,"cov.lv"))$values < 0)){
 
       if(method=="GA"){
         return(-99999999)
       }else if(method=="tabuSearch"){
-        return(1)
+        return(0)
       }
 
     }else{
       bic = fitMeasures(outt)["bic"]
-     # df=outt@Fit@test[[1]]$df
-      #cov.order = outt@Data@ov.names
-      #cov.test = cov(myData.test[,unlist(cov.order)])
-     # impcov = fitted(out)$cov
-      #fit.test = 0.5*(log(det(impcov)) + trace(cov.test %*% solve(impcov)) - log(det(cov.test))  - p)
-      #chisq.test = N*fit.test
-     # ncp.test = d(chisq.test,df,N)
-     # RMSEA.test = rmsea(ncp.test,df)
+      df=outt@Fit@test[[1]]$df
+      cov.order = outt@Data@ov.names
+      cov.test = cov(data_test[,unlist(cov.order)])
+      impcov = fitted(outt)$cov
+      N=nrow(data_test)
+      fit.test = 0.5*(log(det(impcov)) + trace(cov.test %*% solve(impcov)) - log(det(cov.test))  - p)
+      chisq.test = N*fit.test
+      ncp.test = d(chisq.test,df,N)
+      RMSEA.test = rmsea(ncp.test,df)
 
       if(criterion=="BIC"){
-        return_val = -bic
+        return_val = 1/bic
       }else if(criterion=="RMSEA"){
         return_val= -RMSEA.test
       }
 
 
       if(method=="GA"){
-        return(return_val + 1000000000000)
+        return(return_val + 1)
       }else if(method=="tabuSearch"){
-        return(return_val + 1000000000000)
+        return(return_val + 1)
       }
 
     }
@@ -89,7 +110,12 @@ autoSEM <- function(method="tabuSearch",nfac=NULL,varList=NULL,
   p_length = length(unlist(varList))
 
   if(method=="GA"){
-    out = ga("binary", fitness = fitness, nBits = p_length,monitor=T,maxiter=niter)
+    if(parallel=="no"){
+      out = ga("binary", fitness = fitness, nBits = p_length,monitor=T,maxiter=niter,run=10)
+    }else if(parallel=="yes"){
+      out = ga("binary", fitness = fitness, nBits = p_length,monitor=T,maxiter=niter,parallel=TRUE)
+    }
+
   }else if(method=="tabuSearch"){
     out = tabuSearch(size = p_length, iters = niter,objFunc = fitness)
   }

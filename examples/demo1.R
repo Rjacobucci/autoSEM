@@ -37,4 +37,4 @@ f2.vars <- c("x4","x5","x6","x7","x8","x9")
 f3.vars <- c("x1","x2","x3","x7","x8","x9")
 rrr = list(f1.vars,f2.vars,f3.vars)
 
-ret = autoSEM(method="tabuSearch",nfac=3,varList=rrr,criterion="BIC",minInd=3,niter=5)
+ret = autoSEM(method="tabuSearch",data=myData,nfac=3,varList=rrr,criterion="BIC",minInd=3,niter=10)
