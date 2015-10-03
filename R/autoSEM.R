@@ -47,25 +47,45 @@ autoSEM <- function(method="tabuSearch",
       string = string[-(1:uuu[[i]])]
     }
 
-    for(i in 1:length(jjj)){
-      if(sum(jjj[[i]]) < minInd){
-        if(method=="GA"){
-          return(-99999999)
-        }else if(method=="tabuSearch"){
-          return(0)
-        }
-      }
-    }
+#    for(i in 1:length(jjj)){
+#      if(sum(jjj[[i]]) < minInd){
+#        if(method=="GA"){
+#          return(-99999999)
+#        }else if(method=="tabuSearch"){
+#          return(0)
+#        }
+#      }
+#    }
 
     ooo = list()
+  #  for(i in 1:nfac){
+  #    facc = paste("f",i,sep="")
+   #   ooo[[i]] = paste(paste(facc," =~ "), paste(lll[[i]][jjj[[i]]==1], collapse= "+"))
+   # }
+
     for(i in 1:nfac){
-      facc = paste("f",i,sep="")
-      ooo[[i]] = paste(paste(facc," =~ "), paste(lll[[i]][jjj[[i]]==1], collapse= "+"))
+          facc = paste("f",i,sep="")
+         ooo[[i]] = paste(paste(facc," =~ "), paste(lll[[i]], collapse= "+"))
     }
+
+    ppp <- list()
+    for(i in 1:nfac){
+      ppp[[i]] = gsub("x","NA*x",ooo[[i]])
+    }
+
+
+    for(i in 1:nfac){
+      ppp[[i]] = gsub("NA",string,ooo[[i]])
+    }
+
+    for(i in 1:9){
+      gsub("NA",ppp[[1]]
+    }
+
 
     fmld <- ""
     for(jj in 1:nfac){
-      fmld <- paste(fmld,ooo[[jj]],sep="\n")
+      fmld <- paste(fmld,ppp[[jj]],sep="\n")
     }
 
     p = length(unique(unlist(varList)))
