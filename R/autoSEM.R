@@ -18,7 +18,10 @@ autoSEM <- function(method="tabuSearch",
                     orth=TRUE,
                     niter=30,
                     parallel="no",
-                    replaceSamp=FALSE){
+                    replaceSamp=FALSE,
+                    boot=FALSE){
+
+  options(warn=2)
 
   if(replaceSamp==FALSE){
     ids = sample(nrow(data),nrow(data)/2)
@@ -36,15 +39,15 @@ autoSEM <- function(method="tabuSearch",
 
     lll = varList
 
-    uuu = list()
-    for(i in 1:length(lll)){
-      uuu[[i]] = length(lll[[i]])
+    jjj = list()
+    for(i in 1:nfac){
+      jjj[[i]] = lll
     }
 
     jjj =  list()
     for(i in 1:nfac){
-      jjj[[i]] =  string[1:uuu[[i]]]
-      string = string[-(1:uuu[[i]])]
+      jjj[[i]] =  string[1:length(lll[[1]])]
+      string = string[-(1:length(lll[[1]]))]
     }
 
 #    for(i in 1:length(jjj)){
@@ -57,50 +60,56 @@ autoSEM <- function(method="tabuSearch",
 #      }
 #    }
 
-    ooo = list()
-  #  for(i in 1:nfac){
-  #    facc = paste("f",i,sep="")
-   #   ooo[[i]] = paste(paste(facc," =~ "), paste(lll[[i]][jjj[[i]]==1], collapse= "+"))
-   # }
+
+
+
+
+  ooo =  list()
 
     for(i in 1:nfac){
           facc = paste("f",i,sep="")
-         ooo[[i]] = paste(paste(facc," =~ "), paste(lll[[i]], collapse= "+"))
+          uu = gsub("1","start(1)*",jjj[[i]])
+          uu = gsub("0","0*",uu)
+          uu2 = paste(uu,lll[[1]],sep="")
+          ooo[[i]] =  paste0(uu2,collapse="+")
     }
-
-    ppp <- list()
-    for(i in 1:nfac){
-      ppp[[i]] = gsub("x","NA*x",ooo[[i]])
-    }
-
 
     for(i in 1:nfac){
-      ppp[[i]] = gsub("NA",string,ooo[[i]])
+      facc = paste("f",i,sep="")
+      ooo[[i]] = paste(paste(facc," =~ "), ooo[[i]])
     }
 
-    for(i in 1:9){
-      gsub("NA",ppp[[1]]
-    }
+
+   # ppp <- list()
+   # for(i in 1:nfac){
+    #  ppp[[i]] = gsub("x","NA*x",ooo[[i]])
+   # }
+
+
+   # for(uu in 1:length(start)){
+   #   ppp[[1]] = gsub("NA",start[uu],ppp[[1]])
+    #  ppp[[1]]
+    #}
+
 
 
     fmld <- ""
     for(jj in 1:nfac){
-      fmld <- paste(fmld,ppp[[jj]],sep="\n")
+      fmld <- paste(fmld,ooo[[jj]],sep="\n")
     }
 
     p = length(unique(unlist(varList)))
 
-    outt = lavaan::cfa(fmld,data_train,orthogonal=orth,std.lv=stdlv)
 
-    if(inspect(outt,"converged")==F | any(eigen(inspect(outt,"cov.lv"))$values < 0)){
+    outt = try(lavaan::cfa(fmld,data_train,orthogonal=orth,std.lv=stdlv),silent=TRUE)
 
+    if(inherits(outt, "try-error")) {
       if(method=="GA"){
         return(-99999999)
       }else if(method=="tabuSearch"){
         return(0)
       }
-
-    }else{
+      }else{
       bic = fitMeasures(outt)["bic"]
       df=outt@Fit@test[[1]]$df
       cov.order = outt@Data@ov.names
@@ -112,10 +121,26 @@ autoSEM <- function(method="tabuSearch",
       ncp.test = d(chisq.test,df,N)
       RMSEA.test = rmsea(ncp.test,df)
 
+      if(boot == TRUE){
+        RMSEA.rep <- rep(NA,100)
+        for(i in 1:100){
+          ids <- sample(nrow(myData),nrow(myData),replace=TRUE)
+          new.dat <- myData[ids,]
+          cov.boot <- cov(new.dat)
+          fit.boot = 0.5*(log(det(impcov)) + trace(cov.boot %*% solve(impcov)) - log(det(cov.boot))  - p)
+          chisq.boot = N*fit.boot
+          ncp.boot = d(chisq.boot,df,N)
+          RMSEA.rep[i] = rmsea(ncp.boot,df)
+        }
+      }
+      RMSEA.boot <- mean(RMSEA.rep)
+
       if(criterion=="BIC"){
         return_val = 1/bic
       }else if(criterion=="RMSEA"){
         return_val= -RMSEA.test
+      }else if(criterion=="RMSEA.boot"){
+        return_val= -RMSEA.boot
       }
 
 
@@ -131,13 +156,13 @@ autoSEM <- function(method="tabuSearch",
 
   if(method=="GA"){
     if(parallel=="no"){
-      out = ga("binary", fitness = fitness, nBits = p_length,monitor=T,maxiter=niter,run=10)
+      out = ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
     }else if(parallel=="yes"){
-      out = ga("binary", fitness = fitness, nBits = p_length,monitor=T,maxiter=niter,parallel=TRUE)
+      out = ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
     }
 
   }else if(method=="tabuSearch"){
-    out = tabuSearch(size = p_length, iters = niter,objFunc = fitness)
+    out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness)
   }
 
   out
