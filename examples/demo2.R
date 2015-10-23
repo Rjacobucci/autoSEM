@@ -34,6 +34,8 @@ sim.out = cfa(fa,myData)
 summary(sim.out)
 1/fitMeasures(sim.out)["bic"]
 
+sim.out@pta$vnames$ov.nox[[1]]
+
 start= c(1,1,1,0,0,0,1,1,1)
 nfac=1
 
@@ -43,21 +45,21 @@ nfac=1
 
 f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 rrr = list(f1.vars)
-facs <- 1:4
+facs <- 1:3
 
 ret.auto <- function(facs){
     res <- list()
     ret = autoSEM(method="GA",data=myData,nfac=facs,orth=FALSE,replaceSamp=FALSE,boot=TRUE,
-                  varList=rrr,criterion="RMSEA",minInd=3,niter=3)
-    res$fit = 1/(summary(ret)$fitness-1)
-    #res$fit = -(summary(ret)$fitness-1)
+                  varList=rrr,criterion="RMSEA",minInd=3,niter=20)
+    #res$fit = 1/(summary(ret)$fitness-1)
+    res$fit = -(summary(ret)$fitness-1)
     res$solution = summary(ret)$solution
     res
 }
 
 library(snowfall)
 sfStop()
-sfInit(T,4)
+sfInit(T,3)
 snowfall::sfExport("myData","rrr","facs")
 sfLibrary(autoSEM); sfLibrary(lavaan); sfLibrary(GA); sfLibrary(tabuSearch)
 (out = sfLapply(facs,ret.auto))

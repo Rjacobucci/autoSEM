@@ -18,21 +18,25 @@ autoSEM <- function(method="tabuSearch",
                     orth=TRUE,
                     niter=30,
                     parallel="no",
-                    replaceSamp=FALSE,
-                    boot=FALSE){
+                    CV=FALSE){
 
   options(warn=2)
 
-  if(replaceSamp==FALSE){
+  if(CV==T){
     ids = sample(nrow(data),nrow(data)/2)
     data_train = data[ids,]
     data_test = data[-ids,]
-  }else if(replaceSamp==TRUE){
-    ids = sample(nrow(data),nrow(data),replace=TRUE)
-    ids2 = sample(nrow(data),nrow(data),replace=TRUE)
-    data_train = data[ids,]
-    data_test = data[ids2,]
+  }else if(CV==FALSE){
+    data_train = data
+  }else if(CV=="boot"){
+    data_train = data
   }
+#  }else if(replaceSamp==TRUE){
+#    ids = sample(nrow(data),nrow(data),replace=TRUE)
+#    ids2 = sample(nrow(data),nrow(data),replace=TRUE)
+#    data_train = data[ids,]
+#    data_test = data[ids2,]
+#  }
 
 
   fitness <- function(string) {
@@ -110,37 +114,41 @@ autoSEM <- function(method="tabuSearch",
         return(0)
       }
       }else{
-      bic = fitMeasures(outt)["bic"]
-      df=outt@Fit@test[[1]]$df
-      cov.order = outt@Data@ov.names
-      cov.test = cov(data_test[,unlist(cov.order)])
-      impcov = fitted(outt)$cov
-      N=nrow(data_test)
-      fit.test = 0.5*(log(det(impcov)) + trace(cov.test %*% solve(impcov)) - log(det(cov.test))  - p)
-      chisq.test = N*fit.test
-      ncp.test = d(chisq.test,df,N)
-      RMSEA.test = rmsea(ncp.test,df)
-
-      if(boot == TRUE){
+      if(CV==F){
+        bic = fitMeasures(outt)["bic"]
+        RMSEA = fitMeasures(outt)["rmsea"]
+      }else if(CV==T){
+        df=outt@Fit@test[[1]]$df
+        cov.order = outt@Data@ov.names
+        cov.test = cov(data_test[,unlist(cov.order)])
+        impcov = fitted(outt)$cov
+        N=nrow(data_test)
+        fit.test = 0.5*(log(det(impcov)) + trace(cov.test %*% solve(impcov)) - log(det(cov.test))  - p)
+        chisq.test = N*fit.test
+        ncp.test = d(chisq.test,df,N)
+        RMSEA = rmsea(ncp.test,df)
+      }else if(CV == "boot"){
         RMSEA.rep <- rep(NA,100)
+        impcov = fitted(outt)$cov
+        N=nrow(data_train)
+        df=outt@Fit@test[[1]]$df
         for(i in 1:100){
-          ids <- sample(nrow(myData),nrow(myData),replace=TRUE)
-          new.dat <- myData[ids,]
-          cov.boot <- cov(new.dat)
+          ids <- sample(nrow(data_train),nrow(data_train),replace=TRUE)
+          new.dat <- data_train[ids,]
+          cov.boot <- cov(new.dat[,outt@pta$vnames$ov.nox[[1]]])
           fit.boot = 0.5*(log(det(impcov)) + trace(cov.boot %*% solve(impcov)) - log(det(cov.boot))  - p)
           chisq.boot = N*fit.boot
           ncp.boot = d(chisq.boot,df,N)
           RMSEA.rep[i] = rmsea(ncp.boot,df)
         }
+        RMSEA <- mean(RMSEA.rep)
       }
-      RMSEA.boot <- mean(RMSEA.rep)
+
 
       if(criterion=="BIC"){
         return_val = 1/bic
       }else if(criterion=="RMSEA"){
-        return_val= -RMSEA.test
-      }else if(criterion=="RMSEA.boot"){
-        return_val= -RMSEA.boot
+        return_val= -RMSEA
       }
 
 
