@@ -19,7 +19,7 @@ autoSEM <- function(method="tabuSearch",
                     niter=30,
                     parallel="no",
                     CV=FALSE){
-
+  ret <- list()
   options(warn=2)
 
   if(CV==T){
@@ -173,5 +173,15 @@ autoSEM <- function(method="tabuSearch",
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness)
   }
 
-  out
+  if(criterion=="BIC"){
+    ret$fit = 1/(summary(out)$fitness-1)
+  }else if(criterion=="RMSEA"){
+    ret$fit = -(summary(out)$fitness-1)
+  }
+
+  ret$solution = summary(out)$solution
+  ret$out = out
+
+
+  ret
 }

@@ -2,4 +2,5 @@
 
 export(autoSEM)
 export(d)
+export(multFac)
 export(trace)
