@@ -1,3 +1,11 @@
+library(devtools)
+
+install_github("RJacobucci/autoSEM")
+library(autoSEM)
+library(tabuSearch)
+library(GA)
+
+
 library(lavaan)
 
 N=5000
