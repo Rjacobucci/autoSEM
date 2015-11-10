@@ -22,7 +22,29 @@ multFac <- function(facList,parallel="no",ncore=1,
                     CV=FALSE){
 
   if(parallel=="yes"){
-    #library(snowfall)
+
+    if(Sys.info()[1] == "Windows"){
+
+      library(snowfall)
+      snowfall::sfInit(T,ncore)
+      snowfall::sfExport("data","facList","criterion","CV","orth",
+                         "stdlv","minInd","niter","varList","method")
+      snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
+      snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch)
+
+      ret.auto <- function(facs){
+
+        ret = autoSEM(method=method,data=data,nfac=facs,orth=orth,CV=CV,
+                      varList=varList,criterion=criterion,minInd=minInd,niter=niter)
+        ret
+      }
+
+
+      out = sfLapply(facList,ret.auto)
+      snowfall::sfStop()
+
+    }else if(Sys.info()[1]=="Darwin"){
+    library(snowfall)
     snowfall::sfInit(T,ncore)
     snowfall::sfExport("data","facList","criterion","CV","orth",
                        "stdlv","minInd","niter","varList","method")
@@ -39,6 +61,7 @@ multFac <- function(facList,parallel="no",ncore=1,
 
     out = sfLapply(facList,ret.auto)
     snowfall::sfStop()
+    }
   }else if(parallel=="no"){
     out = list()
 

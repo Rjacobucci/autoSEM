@@ -9,4 +9,7 @@ facs <- 2:3
 
 
 uu = multFac(facList=facs,parallel="yes",ncore=2,method="GA",data=myData,orth=FALSE,CV="boot",
-             varList=rrr,criterion="RMSEA",minInd=3,niter=30)
+             varList=rrr,criterion="RMSEA",minInd=3,niter=1)
+uu
+fits = c(uu[[1]]$fit,uu[[2]]$fit)
+which(min(fits)==fits)

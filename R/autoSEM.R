@@ -170,7 +170,7 @@ autoSEM <- function(method="tabuSearch",
     }
 
   }else if(method=="tabuSearch"){
-    out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness)
+    out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }
 
   if(criterion=="BIC"){
