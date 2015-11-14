@@ -43,6 +43,10 @@ autoSEM <- function(method="tabuSearch",
 
     lll = varList
 
+    if(method=="rgenoud"){
+      string = round(string)
+    }
+
     jjj = list()
     for(i in 1:nfac){
       jjj[[i]] = lll
@@ -144,18 +148,27 @@ autoSEM <- function(method="tabuSearch",
         RMSEA <- mean(RMSEA.rep)
       }
 
-
+    if(method == "tabuSearch" | method== "GA"){
       if(criterion=="BIC"){
         return_val = 1/bic
       }else if(criterion=="RMSEA"){
         return_val= -RMSEA
       }
+    }else if(method=="rgenoud"){
+      if(criterion=="BIC"){
+        return_val = 1/bic
+      }else if(criterion=="RMSEA"){
+        return_val= RMSEA
+      }
+    }
 
 
       if(method=="GA"){
         return(return_val + 1)
       }else if(method=="tabuSearch"){
         return(return_val + 1)
+      }else if(method=="rgenoud"){
+        return(return_val)
       }
 
     }
@@ -171,16 +184,33 @@ autoSEM <- function(method="tabuSearch",
 
   }else if(method=="tabuSearch"){
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
+  }else if(method=="rgenoud"){
+    dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
+    out = genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,solution.tolerance=0.000001)
   }
 
+  if(method=="tabuSearch" | method=="GA"){
+    ret$out = out
   if(criterion=="BIC"){
     ret$fit = 1/(summary(out)$fitness-1)
   }else if(criterion=="RMSEA"){
     ret$fit = -(summary(out)$fitness-1)
+    }
+  }else if(method=="rgenoud"){
+    if(criterion=="BIC"){
+      ret$fit = 1/out$value
+    }else if(criterion=="RMSEA"){
+      ret$fit = out$value
+    }
   }
 
-  ret$solution = summary(out)$solution
-  ret$out = out
+  if(method=="tabuSearch" | method=="GA"){
+    ret$solution = summary(out)$solution
+  }else if(method=="rgenoud"){
+    ret$solution = round(out$par)
+  }
+
+
 
 
   ret

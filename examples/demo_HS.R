@@ -1,7 +1,7 @@
-library(devtools)
+#library(devtools)
 
-install_github("RJacobucci/autoSEM")
-library(autoSEM)
+#install_github("RJacobucci/autoSEM")
+#library(autoSEM)
 
 
 
@@ -14,7 +14,7 @@ rrr = list(f1.vars)
 facs <- 2:3
 
 
-uu = multFac(facList=facs,parallel="yes",ncore=2,method="GA",data=myData,orth=FALSE,CV="boot",
+uu = multFac(facList=facs,parallel="no",ncore=2,method="rgenoud",data=myData,orth=FALSE,CV="boot",
              varList=rrr,criterion="RMSEA",minInd=3,niter=1)
 uu
 fits = c(uu[[1]]$fit,uu[[2]]$fit)

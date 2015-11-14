@@ -49,7 +49,7 @@ multFac <- function(facList,parallel="no",ncore=1,
     snowfall::sfExport("data","facList","criterion","CV","orth",
                        "stdlv","minInd","niter","varList","method")
     snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
-    snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch)
+    snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch);snowfall::sfLibrary(rgenoud)
 
     ret.auto <- function(facs){
 

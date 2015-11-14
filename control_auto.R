@@ -2,6 +2,7 @@
 
 library(lavaan)
 library(devtools)
+library(rgenoud)
 library(tabuSearch)
 library(GA)
 
