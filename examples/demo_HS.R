@@ -14,8 +14,18 @@ rrr = list(f1.vars)
 facs <- 2:3
 
 
-uu = multFac(facList=facs,parallel="no",ncore=2,method="rgenoud",data=myData,orth=FALSE,CV="boot",
-             varList=rrr,criterion="RMSEA",minInd=3,niter=1)
+uu = multFac(facList=facs,parallel="no",ncore=2,method="tabuSearch",
+             data=myData,orth=FALSE,CV=FALSE,
+             varList=rrr,criterion="BIC",niter=3)
 uu
+
+summary(uu[[1]]$out)
+print(uu[[1]]$out)
+max(uu[[1]]$out$eUtilityKeep)
+
 fits = c(uu[[1]]$fit,uu[[2]]$fit)
 which(min(fits)==fits)
+
+
+autoSEM(method="GA",data=myData,nfac=1,varList=list(f1.vars),orth=FALSE,CV=FALSE,
+        criterion="RMSEA",minInd=3,niter=3)

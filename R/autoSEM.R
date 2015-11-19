@@ -30,6 +30,8 @@ autoSEM <- function(method="tabuSearch",
     data_train = data
   }else if(CV=="boot"){
     data_train = data
+  }else{
+    stop("Wrong Assignment to CV")
   }
 #  }else if(replaceSamp==TRUE){
 #    ids = sample(nrow(data),nrow(data),replace=TRUE)
@@ -58,15 +60,17 @@ autoSEM <- function(method="tabuSearch",
       string = string[-(1:length(lll[[1]]))]
     }
 
-#    for(i in 1:length(jjj)){
-#      if(sum(jjj[[i]]) < minInd){
-#        if(method=="GA"){
-#          return(-99999999)
-#        }else if(method=="tabuSearch"){
-#          return(0)
-#        }
-#      }
-#    }
+    #    for(i in 1:length(jjj)){
+    #      if(sum(jjj[[i]]) < minInd){
+    #        if(method=="GA"){
+    #          -44
+    #        }else if(method=="tabuSearch"){
+    #          0
+    #        }else if(method=="rgenoud"){
+    #          99999999
+    #        }
+    #      }
+    #    }
 
 
 
@@ -113,9 +117,13 @@ autoSEM <- function(method="tabuSearch",
 
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
-        return(-99999999)
+        #return(-99999999)
+        -99999999
       }else if(method=="tabuSearch"){
-        return(0)
+        #return(0)
+        0
+      }else if(method == "rgenoud"){
+        9999999999
       }
       }else{
       if(CV==F){
@@ -150,29 +158,36 @@ autoSEM <- function(method="tabuSearch",
 
     if(method == "tabuSearch" | method== "GA"){
       if(criterion=="BIC"){
-        return_val = 1/bic
+        return_val = 100 /bic
       }else if(criterion=="RMSEA"){
-        return_val= -RMSEA
+        return_val= 1 - RMSEA
       }
     }else if(method=="rgenoud"){
       if(criterion=="BIC"){
-        return_val = 1/bic
+        return_val = bic
       }else if(criterion=="RMSEA"){
         return_val= RMSEA
       }
     }
 
-
+#10
       if(method=="GA"){
-        return(return_val + 1)
+        return(return_val)
+        #10
       }else if(method=="tabuSearch"){
-        return(return_val + 1)
+        return(return_val)
+        #10
       }else if(method=="rgenoud"){
         return(return_val)
+        #10
       }
 
-    }
+      }
+   # 10
   }
+
+
+
   p_length = length(unlist(varList))
 
   if(method=="GA"){
@@ -186,25 +201,36 @@ autoSEM <- function(method="tabuSearch",
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="rgenoud"){
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
-    out = genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,solution.tolerance=0.000001)
+    out = genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
   }
 
-  if(method=="tabuSearch" | method=="GA"){
-    ret$out = out
-  if(criterion=="BIC"){
-    ret$fit = 1/(summary(out)$fitness-1)
-  }else if(criterion=="RMSEA"){
-    ret$fit = -(summary(out)$fitness-1)
+  if(method=="GA"){
+    if(criterion=="BIC"){
+      ret$fit = 100/(summary(out)$fitness)
+    }else if(criterion=="RMSEA"){
+      ret$fit = 1- (summary(out)$fitness)
     }
   }else if(method=="rgenoud"){
     if(criterion=="BIC"){
-      ret$fit = 1/out$value
+      ret$fit = out$value
     }else if(criterion=="RMSEA"){
       ret$fit = out$value
     }
+  }else if(method=="tabuSearch"){
+    if(criterion=="BIC"){
+      ret$fit = 100/max(out$eUtilityKeep)
+    }else if(criterion=="RMSEA"){
+      ret$fit = 1-max(out$eUtilityKeep)
+    }
   }
 
-  if(method=="tabuSearch" | method=="GA"){
+  if(method == "GA" | method == "rgenoud"){
+    ret$out = out
+  }
+
+  if(method=="tabuSearch"){
+    ret$solution = out$configKeep[out$eUtilityKeep == max(out$eUtilityKeep),]
+  }else if(method=="GA"){
     ret$solution = summary(out)$solution
   }else if(method=="rgenoud"){
     ret$solution = round(out$par)
