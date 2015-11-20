@@ -14,7 +14,7 @@ rrr = list(f1.vars)
 facs <- 2:3
 
 
-uu = multFac(facList=facs,parallel="no",ncore=2,method="tabuSearch",
+uu = multFac(facList=facs,parallel="no",ncore=2,method="rgenoud",
              data=myData,orth=FALSE,CV=FALSE,
              varList=rrr,criterion="BIC",niter=3)
 uu
