@@ -201,7 +201,7 @@ autoSEM <- function(method="tabuSearch",
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="rgenoud"){
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
-    out = genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
+    out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
   }
 
   if(method=="GA"){

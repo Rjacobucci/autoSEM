@@ -57,7 +57,7 @@ for(i in 1:iters){
     myData = simulateData(mods[[j]],model.type="cfa",sample.nobs=500)
 
 
-    uu = multFac(facList=facs,parallel="yes",ncore=4,method="tabuSearch",data=myData,orth=FALSE,CV=cv[p],
+    uu = multFac(facList=facs,parallel="yes",ncore=4,method="rgenoud",data=myData,orth=FALSE,CV=cv[p],
                  varList=rrr,criterion=crit[o],minInd=3,niter=30)
 
     fits = c(uu[[1]]$fit,uu[[2]]$fit,uu[[3]]$fit,uu[[4]]$fit)

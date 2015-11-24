@@ -7,8 +7,8 @@ library(tabuSearch)
 library(GA)
 
 
-setwd("/Users/RJacobucci/Documents/Github/autoSEM")
-#setwd("C:/Users/jacobucc/Documents/Github/autoSEM")
+#setwd("/Users/RJacobucci/Documents/Github/autoSEM")
+setwd("C:/Users/jacobucc/Documents/Github/autoSEM")
 
 
 #setwd("./regsem")
