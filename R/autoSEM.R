@@ -45,7 +45,7 @@ autoSEM <- function(method="tabuSearch",
 
     lll = varList
 
-    if(method=="rgenoud"){
+    if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
       string = round(string)
     }
 
@@ -122,7 +122,7 @@ autoSEM <- function(method="tabuSearch",
       }else if(method=="tabuSearch"){
         #return(0)
         0
-      }else if(method == "rgenoud"){
+      }else if(method == "rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
         9999999999
       }
       }else{
@@ -162,7 +162,7 @@ autoSEM <- function(method="tabuSearch",
       }else if(criterion=="RMSEA"){
         return_val= 1 - RMSEA
       }
-    }else if(method=="rgenoud"){
+    }else if(method=="rgenoud" | method == "pso" | method == "NMOF" | method=="DEoptim"){
       if(criterion=="BIC"){
         return_val = bic
       }else if(criterion=="RMSEA"){
@@ -177,7 +177,7 @@ autoSEM <- function(method="tabuSearch",
       }else if(method=="tabuSearch"){
         return(return_val)
         #10
-      }else if(method=="rgenoud"){
+      }else if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
         return(return_val)
         #10
       }
@@ -202,6 +202,20 @@ autoSEM <- function(method="tabuSearch",
   }else if(method=="rgenoud"){
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
     out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
+  }else if(method=="pso"){
+
+    out = hydroPSO::hydroPSO(rep(0.5,p_length*nfac),fitness,
+                             lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac))
+
+    #out = pso::psoptim(rep(0.5,p_length*nfac),fitness,
+    #                         lower=0,upper=1)
+  }else if(method=="NMOF"){
+    fitness(rep(0.5,p_length*nfac))
+    algo=list(nB=p_length*nfac)
+    out = NMOF::GAopt(fitness,algo=algo)
+  }else if(method=="DEoptim"){
+    out = RcppDE::DEoptim(fitness,lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac),
+                          control=DEoptim.control(NP=9000))
   }
 
   if(method=="GA"){
@@ -210,7 +224,7 @@ autoSEM <- function(method="tabuSearch",
     }else if(criterion=="RMSEA"){
       ret$fit = 1- (summary(out)$fitness)
     }
-  }else if(method=="rgenoud"){
+  }else if(method=="rgenoud" | method=="pso"){
     if(criterion=="BIC"){
       ret$fit = out$value
     }else if(criterion=="RMSEA"){
@@ -222,9 +236,14 @@ autoSEM <- function(method="tabuSearch",
     }else if(criterion=="RMSEA"){
       ret$fit = 1-max(out$eUtilityKeep)
     }
-  }
+  }else if(method=="NMOF"){
+    if(criterion=="BIC"){
+      ret$fit = out$OFvalue
+    }else if(criterion=="RMSEA"){
+      ret$fit = out$OFvalue
+    }
 
-  if(method == "GA" | method == "rgenoud"){
+  if(method == "GA" | method == "rgenoud" | method=="pso" | method=="NMOF"){
     ret$out = out
   }
 
@@ -232,8 +251,10 @@ autoSEM <- function(method="tabuSearch",
     ret$solution = out$configKeep[out$eUtilityKeep == max(out$eUtilityKeep),]
   }else if(method=="GA"){
     ret$solution = summary(out)$solution
-  }else if(method=="rgenoud"){
+  }else if(method=="rgenoud" | method=="pso"){
     ret$solution = round(out$par)
+  }else if(method=="NMOF"){
+    ret$solution = out$xbest
   }
 
 

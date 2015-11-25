@@ -5,10 +5,13 @@ library(devtools)
 library(rgenoud)
 library(tabuSearch)
 library(GA)
+library(hydroPSO)
+library(NMOF)
+library(RcppDE)
 
 
-#setwd("/Users/RJacobucci/Documents/Github/autoSEM")
-setwd("C:/Users/jacobucc/Documents/Github/autoSEM")
+setwd("/Users/RJacobucci/Documents/Github/autoSEM")
+#setwd("C:/Users/jacobucc/Documents/Github/autoSEM")
 
 
 #setwd("./regsem")
