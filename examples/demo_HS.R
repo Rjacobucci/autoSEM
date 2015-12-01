@@ -27,5 +27,5 @@ fits = c(uu[[1]]$fit,uu[[2]]$fit)
 which(min(fits)==fits)
 
 
-autoSEM(method="NMOF",data=myData,nfac=1,varList=list(f1.vars),orth=FALSE,CV=FALSE,
+out = autoSEM(method="GA",data=myData,nfac=1,varList=list(f1.vars),orth=FALSE,CV=FALSE,
         criterion="RMSEA",minInd=3,niter=3)

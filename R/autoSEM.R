@@ -22,6 +22,10 @@ autoSEM <- function(method="tabuSearch",
   ret <- list()
   options(warn=2)
 
+  if(method != "tabuSearch" & method != "GA"){
+    stop("Only tabuSearch and GA are currently working well.")
+  }
+
   if(CV==T){
     ids = sample(nrow(data),nrow(data)/2)
     data_train = data[ids,]
@@ -181,8 +185,7 @@ autoSEM <- function(method="tabuSearch",
         return(return_val)
         #10
       }
-
-      }
+    }
    # 10
   }
 
@@ -196,7 +199,6 @@ autoSEM <- function(method="tabuSearch",
     }else if(parallel=="yes"){
       out = ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
     }
-
   }else if(method=="tabuSearch"){
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="rgenoud"){
@@ -242,6 +244,7 @@ autoSEM <- function(method="tabuSearch",
     }else if(criterion=="RMSEA"){
       ret$fit = out$OFvalue
     }
+  }
 
   if(method == "GA" | method == "rgenoud" | method=="pso" | method=="NMOF"){
     ret$out = out
@@ -256,9 +259,6 @@ autoSEM <- function(method="tabuSearch",
   }else if(method=="NMOF"){
     ret$solution = out$xbest
   }
-
-
-
 
   ret
 }
