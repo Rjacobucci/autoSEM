@@ -22,9 +22,9 @@ autoSEM <- function(method="tabuSearch",
   ret <- list()
   options(warn=2)
 
-  if(method != "tabuSearch" & method != "GA"){
-    stop("Only tabuSearch and GA are currently working well.")
-  }
+  #if(method != "tabuSearch" & method != "GA"){
+  #  stop("Only tabuSearch and GA are currently working well.")
+  #}
 
   if(CV==T){
     ids = sample(nrow(data),nrow(data)/2)
