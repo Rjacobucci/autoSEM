@@ -27,6 +27,7 @@ fits = c(uu[[1]]$fit,uu[[2]]$fit)
 which(min(fits)==fits)
 
 
-out = autoSEM(method="tabu_rj",data=myData,nfac=3,varList=list(f1.vars),orth=FALSE,CV=FALSE,
-        criterion="BIC",minInd=3,niter=30)
+out = autoSEM(method="aco_rj",data=myData,nfac=1,varList=list(f1.vars),orth=FALSE,CV=FALSE,
+        criterion="NCP",minInd=3,aco.iters=100)
 out
+round(out$out$samp.wgt,3)

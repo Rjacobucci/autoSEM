@@ -18,7 +18,8 @@ autoSEM <- function(method="tabuSearch",
                     orth=TRUE,
                     niter=30,
                     parallel="no",
-                    CV=FALSE){
+                    CV=FALSE,
+                    aco.iters=100){
   ret <- list()
   options(warn=2)
 
@@ -127,13 +128,15 @@ autoSEM <- function(method="tabuSearch",
         #return(0)
         0
       }else if(method == "rgenoud" | method=="pso" | method=="NMOF" |
-               method=="DEoptim" | method=="tabu_rj"){
+               method=="DEoptim" | method=="tabu_rj" | method=="aco_rj"){
         9999999999
       }
       }else{
       if(CV==F){
-        bic = fitMeasures(outt)["bic"]
-        RMSEA = fitMeasures(outt)["rmsea"]
+        fits.lav = fitMeasures(outt)
+        bic = fits.lav["bic"]
+        RMSEA = fits.lav["rmsea"]
+        NCP = d(fits.lav["chisq"],fits.lav["df"],fits.lav["ntotal"])
       }else if(CV==T){
         df=outt@Fit@test[[1]]$df
         cov.order = outt@Data@ov.names
@@ -142,10 +145,11 @@ autoSEM <- function(method="tabuSearch",
         N=nrow(data_test)
         fit.test = 0.5*(log(det(impcov)) + trace(cov.test %*% solve(impcov)) - log(det(cov.test))  - p)
         chisq.test = N*fit.test
-        ncp.test = d(chisq.test,df,N)
-        RMSEA = rmsea(ncp.test,df)
+        NCP = d(chisq.test,df,N)
+        RMSEA = rmsea(NCP,df)
       }else if(CV == "boot"){
         RMSEA.rep <- rep(NA,100)
+        NCP.rep <- rep(NA,100)
         impcov = fitted(outt)$cov
         N=nrow(data_train)
         df=outt@Fit@test[[1]]$df
@@ -155,10 +159,12 @@ autoSEM <- function(method="tabuSearch",
           cov.boot <- cov(new.dat[,outt@pta$vnames$ov.nox[[1]]])
           fit.boot = 0.5*(log(det(impcov)) + trace(cov.boot %*% solve(impcov)) - log(det(cov.boot))  - p)
           chisq.boot = N*fit.boot
-          ncp.boot = d(chisq.boot,df,N)
-          RMSEA.rep[i] = rmsea(ncp.boot,df)
+          NCP.rep[i] = d(chisq.boot,df,N)
+          RMSEA.rep[i] = rmsea(NCP.rep[i],df)
         }
         RMSEA <- mean(RMSEA.rep)
+        NCP <- mean(NCP.rep)
+
       }
 
     if(method == "tabuSearch" | method== "GA"){
@@ -166,14 +172,18 @@ autoSEM <- function(method="tabuSearch",
         return_val = 100 /bic
       }else if(criterion=="RMSEA"){
         return_val= 1 - RMSEA
+      }else if(criterion=="NCP"){
+        return_val = 10/NCP
       }
     }else if(method=="rgenoud" | method == "pso" |
              method == "NMOF" | method=="DEoptim" |
-             method=="tabu_rj"){
+             method=="tabu_rj" | method=="aco_rj"){
       if(criterion=="BIC"){
         return_val = bic
       }else if(criterion=="RMSEA"){
         return_val= RMSEA
+      }else if(criterion=="NCP"){
+        return_val=NCP
       }
     }
 
@@ -187,7 +197,7 @@ autoSEM <- function(method="tabuSearch",
       }else if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
         return(return_val)
         #10
-      }else if(method=="tabu_rj"){
+      }else if(method=="tabu_rj" | method=="aco_rj"){
         return(return_val)
       }
     }
@@ -208,6 +218,8 @@ autoSEM <- function(method="tabuSearch",
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="tabu_rj"){
     out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
+  }else if(method=="aco_rj"){
+    out = aco_rj(size=p_length*nfac,iters=aco.iters,fitness=fitness,criterion=criterion)
   }else if(method=="rgenoud"){
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
     out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
@@ -232,11 +244,15 @@ autoSEM <- function(method="tabuSearch",
       ret$fit = 100/(summary(out)$fitness)
     }else if(criterion=="RMSEA"){
       ret$fit = 1- (summary(out)$fitness)
+    }else if(criterion=="NCP"){
+      ret$fit = 1/NCP
     }
-  }else if(method=="rgenoud" | method=="pso" | method=="tabu_rj"){
+  }else if(method=="rgenoud" | method=="pso" | method=="tabu_rj" | method=="aco_rj"){
     if(criterion=="BIC"){
       ret$fit = out$value
     }else if(criterion=="RMSEA"){
+      ret$fit = out$value
+    }else if(criterion=="NCP"){
       ret$fit = out$value
     }
   }else if(method=="tabuSearch"){
@@ -253,7 +269,8 @@ autoSEM <- function(method="tabuSearch",
     }
   }
 
-  if(method == "GA" | method == "rgenoud" | method=="pso" | method=="NMOF"){
+  if(method == "GA" | method == "rgenoud" | method=="pso" |
+     method=="NMOF" | method=="aco_rj"){
     ret$out = out
   }
 
@@ -265,7 +282,7 @@ autoSEM <- function(method="tabuSearch",
     ret$solution = round(out$par)
   }else if(method=="NMOF"){
     ret$solution = out$xbest
-  }else if(method=="tabu_rj"){
+  }else if(method=="tabu_rj" | method=="aco_rj"){
     ret$solution = out$solution
   }
 
