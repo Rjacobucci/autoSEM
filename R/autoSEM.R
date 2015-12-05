@@ -126,7 +126,8 @@ autoSEM <- function(method="tabuSearch",
       }else if(method=="tabuSearch"){
         #return(0)
         0
-      }else if(method == "rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
+      }else if(method == "rgenoud" | method=="pso" | method=="NMOF" |
+               method=="DEoptim" | method=="tabu_rj"){
         9999999999
       }
       }else{
@@ -166,7 +167,9 @@ autoSEM <- function(method="tabuSearch",
       }else if(criterion=="RMSEA"){
         return_val= 1 - RMSEA
       }
-    }else if(method=="rgenoud" | method == "pso" | method == "NMOF" | method=="DEoptim"){
+    }else if(method=="rgenoud" | method == "pso" |
+             method == "NMOF" | method=="DEoptim" |
+             method=="tabu_rj"){
       if(criterion=="BIC"){
         return_val = bic
       }else if(criterion=="RMSEA"){
@@ -184,6 +187,8 @@ autoSEM <- function(method="tabuSearch",
       }else if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
         return(return_val)
         #10
+      }else if(method=="tabu_rj"){
+        return(return_val)
       }
     }
    # 10
@@ -201,6 +206,8 @@ autoSEM <- function(method="tabuSearch",
     }
   }else if(method=="tabuSearch"){
     out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
+  }else if(method=="tabu_rj"){
+    out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
   }else if(method=="rgenoud"){
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
     out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
@@ -226,7 +233,7 @@ autoSEM <- function(method="tabuSearch",
     }else if(criterion=="RMSEA"){
       ret$fit = 1- (summary(out)$fitness)
     }
-  }else if(method=="rgenoud" | method=="pso"){
+  }else if(method=="rgenoud" | method=="pso" | method=="tabu_rj"){
     if(criterion=="BIC"){
       ret$fit = out$value
     }else if(criterion=="RMSEA"){
@@ -258,6 +265,8 @@ autoSEM <- function(method="tabuSearch",
     ret$solution = round(out$par)
   }else if(method=="NMOF"){
     ret$solution = out$xbest
+  }else if(method=="tabu_rj"){
+    ret$solution = out$solution
   }
 
   ret
