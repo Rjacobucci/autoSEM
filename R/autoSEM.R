@@ -65,17 +65,17 @@ autoSEM <- function(method="tabuSearch",
       string = string[-(1:length(lll[[1]]))]
     }
 
-    #    for(i in 1:length(jjj)){
-    #      if(sum(jjj[[i]]) < minInd){
-    #        if(method=="GA"){
-    #          -44
-    #        }else if(method=="tabuSearch"){
-    #          0
-    #        }else if(method=="rgenoud"){
-    #          99999999
-    #        }
-    #      }
-    #    }
+        for(i in 1:length(jjj)){
+          if(sum(jjj[[i]]) < minInd){
+            if(method=="GA"){
+              -44
+            }else if(method=="tabuSearch"){
+              0
+            }else if(method=="rgenoud" | method=="tabu_rj" | method=="aco_rj"){
+              99999999
+            }
+          }
+        }
 
 
 
