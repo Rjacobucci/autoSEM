@@ -9,13 +9,43 @@ multFac(facList, parallel = "no", ncore = 1, method = "tabuSearch",
   stdlv = TRUE, orth = TRUE, niter = 30, CV = FALSE)
 }
 \arguments{
-\item{method}{}
+\item{facList}{A vector containing the number of factors to test. Ex: ll = c(1,2,3)}
+
+\item{parallel}{Whether to use the snowfall package for parallelization. Note that
+this is different than in autoSEM. Parallelization with multFac runs the
+different factor models separately, not in the actual search algorithm.}
+
+\item{ncore}{Number of cores to use.}
+
+\item{method}{which optimization algorithm to use.}
+
+\item{data}{a required dataset to search with.}
+
+\item{varList}{list containing the names of the
+variables to use from the dataset.}
+
+\item{criterion}{The fit index to use as a criterion for
+choosing the best model.}
+
+\item{minInd}{The minimum number of indicators per factor.}
+
+\item{stdlv}{Whether to use standardized factor loadings
+(setting factor variance(s) to 1).}
+
+\item{orth}{Whether to specify the factor covariances as orthogonal.}
+
+\item{niter}{The maximum number of iterations to all.}
+
+\item{CV}{Whether to use cross-validation for choosing the best model. The
+default is to use fit indices without CV.}
 }
 \description{
 Tests multiple factors
 }
 \examples{
+\dontrun{
 multFac()
+}
 }
 \keyword{multFac}
 

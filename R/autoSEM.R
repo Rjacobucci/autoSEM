@@ -1,12 +1,30 @@
+#' This function houses a number of different heuristic optimization algorithms
+#'     for specification search.
 #'
 #'
-#' This function houses a number of different heuristic optimization algorithms for specification search.
-#' @param method which optimization algorithm to use
+#' @param method which optimization algorithm to use.
+#' @param data a required dataset to search with.
+#' @param nfac the number of factors to test.
+#' @param varList list containing the names of the
+#'        variables to use from the dataset.
+#' @param criterion The fit index to use as a criterion for
+#'        choosing the best model.
+#' @param minInd The minimum number of indicators per factor.
+#' @param stdlv Whether to use standardized factor loadings
+#'        (setting factor variance(s) to 1).
+#' @param orth Whether to specify the factor covariances as orthogonal.
+#' @param niter The maximum number of iterations to all.
+#' @param parallel Whether to use the snowfall package for parallelization.
+#'        Note that this is only applicable for the GA package at this time.
+#' @param CV Whether to use cross-validation for choosing the best model. The
+#'        default is to use fit indices without CV.
+#' @param aco.iters Number of iterations to allow for the ant colony algorithm.
 #' @keywords autoSEM
 #' @export
 #' @examples
+#' \dontrun{
 #' autoSEM()
-#'
+#'}
 #'
 autoSEM <- function(method="tabuSearch",
                     data=NULL,
@@ -118,6 +136,10 @@ autoSEM <- function(method="tabuSearch",
     p = length(unique(unlist(varList)))
 
 
+    d = function(chisq,df,N) max(0,(chisq -df)/(N-1))
+    rmsea = function(ncp,df) sqrt(ncp/df)
+
+
     outt = try(lavaan::cfa(fmld,data_train,orthogonal=orth,std.lv=stdlv),silent=TRUE)
 
     if(inherits(outt, "try-error")) {
@@ -133,7 +155,7 @@ autoSEM <- function(method="tabuSearch",
       }
       }else{
       if(CV==F){
-        fits.lav = fitMeasures(outt)
+        fits.lav = lavaan::fitMeasures(outt)
         bic = fits.lav["bic"]
         RMSEA = fits.lav["rmsea"]
         NCP = d(fits.lav["chisq"],fits.lav["df"],fits.lav["ntotal"])
@@ -210,12 +232,12 @@ autoSEM <- function(method="tabuSearch",
 
   if(method=="GA"){
     if(parallel=="no"){
-      out = ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
+      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
     }else if(parallel=="yes"){
-      out = ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
+      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
     }
   }else if(method=="tabuSearch"){
-    out = tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
+    out = tabuSearch::tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="tabu_rj"){
     out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
   }else if(method=="aco_rj"){

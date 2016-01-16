@@ -2,20 +2,51 @@
 % Please edit documentation in R/autoSEM.R
 \name{autoSEM}
 \alias{autoSEM}
-\title{This function houses a number of different heuristic optimization algorithms for specification search.}
+\title{This function houses a number of different heuristic optimization algorithms
+    for specification search.}
 \usage{
 autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
   criterion = "BIC", minInd = 3, stdlv = TRUE, orth = TRUE,
   niter = 30, parallel = "no", CV = FALSE, aco.iters = 100)
 }
 \arguments{
-\item{method}{which optimization algorithm to use}
+\item{method}{which optimization algorithm to use.}
+
+\item{data}{a required dataset to search with.}
+
+\item{nfac}{the number of factors to test.}
+
+\item{varList}{list containing the names of the
+variables to use from the dataset.}
+
+\item{criterion}{The fit index to use as a criterion for
+choosing the best model.}
+
+\item{minInd}{The minimum number of indicators per factor.}
+
+\item{stdlv}{Whether to use standardized factor loadings
+(setting factor variance(s) to 1).}
+
+\item{orth}{Whether to specify the factor covariances as orthogonal.}
+
+\item{niter}{The maximum number of iterations to all.}
+
+\item{parallel}{Whether to use the snowfall package for parallelization.
+Note that this is only applicable for the GA package at this time.}
+
+\item{CV}{Whether to use cross-validation for choosing the best model. The
+default is to use fit indices without CV.}
+
+\item{aco.iters}{Number of iterations to allow for the ant colony algorithm.}
 }
 \description{
-This function houses a number of different heuristic optimization algorithms for specification search.
+This function houses a number of different heuristic optimization algorithms
+    for specification search.
 }
 \examples{
+\dontrun{
 autoSEM()
+}
 }
 \keyword{autoSEM}
 

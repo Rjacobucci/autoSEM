@@ -1,15 +1,14 @@
-#'
-#'
 #' Implementation of tabu search by ross jacobucci
-#' @param size
-#' @param iters
+#'
+#' @param size Tabu list size. This is the number of variables * factors.
+#' @param iters Maximum number of iterations to allow.
+#' @param fitness Fitness function to use.
 #' @keywords tabu_rj
 #' @export
 #' @examples
+#' \dontrun{
 #' tabu_rj()
-#'
-#'
-#'
+#'}
 
 
 tabu_rj <- function(size, iters,fitness){

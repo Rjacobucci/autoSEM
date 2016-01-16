@@ -1,16 +1,36 @@
-#'
-#'
 #' Tests multiple factors
-#' @param method
+#'
+#'
+#' @param facList A vector containing the number of factors to test. Ex: ll = c(1,2,3)
+#' @param parallel Whether to use the snowfall package for parallelization. Note that
+#'        this is different than in autoSEM. Parallelization with multFac runs the
+#'        different factor models separately, not in the actual search algorithm.
+#' @param ncore Number of cores to use.
+#' @param method which optimization algorithm to use.
+#' @param data a required dataset to search with.
+#' @param varList list containing the names of the
+#'        variables to use from the dataset.
+#' @param criterion The fit index to use as a criterion for
+#'        choosing the best model.
+#' @param minInd The minimum number of indicators per factor.
+#' @param stdlv Whether to use standardized factor loadings
+#'        (setting factor variance(s) to 1).
+#' @param orth Whether to specify the factor covariances as orthogonal.
+#' @param niter The maximum number of iterations to all.
+#' @param CV Whether to use cross-validation for choosing the best model. The
+#'        default is to use fit indices without CV.
 #' @keywords multFac
 #' @export
 #' @examples
+#' \dontrun{
 #' multFac()
-#'
-#'
+#'}
 
 
-multFac <- function(facList,parallel="no",ncore=1,
+
+multFac <- function(facList,
+                    parallel="no",
+                    ncore=1,
                     method="tabuSearch",
                     data=NULL,
                     varList=NULL,
@@ -29,8 +49,7 @@ multFac <- function(facList,parallel="no",ncore=1,
 
     if(Sys.info()[1] == "Windows"){
 
-      library(snowfall)
-      snowfall::sfInit(T,ncore)
+      snowfall::sfInit(parallel=TRUE, cpus=ncore)
       snowfall::sfExport("data","facList","criterion","CV","orth",
                          "stdlv","minInd","niter","varList","method")
       snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
@@ -49,12 +68,12 @@ multFac <- function(facList,parallel="no",ncore=1,
       snowfall::sfStop()
 
     }else if(Sys.info()[1]=="Darwin"){
-    library(snowfall)
+
     snowfall::sfStop()
-    snowfall::sfInit(T,ncore)
+    snowfall::sfInit( parallel=TRUE, cpus=ncore)
     snowfall::sfExport("data","facList","criterion","CV","orth",
                        "stdlv","minInd","niter","varList","method")
-    snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
+    snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);snowfall::sfLibrary(hydroPSO)
     snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch);snowfall::sfLibrary(rgenoud)
 
     ret.auto <- function(facs){

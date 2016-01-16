@@ -1,12 +1,15 @@
+#' Calculates the trace of a matrix.
 #'
-#'
-#' Calculates the trace of a matrix
-#' @param A matrix
+#' @param mat A matrix.
+#' @return The sum of the diagonal entries in \code{mat}.
 #' @keywords trace
 #' @export
 #' @examples
-#' trace()
+#' \dontrun{
+#' mm = matrix(c(1,2,3,4),2,2)
+#' trace(mm)
+#' }
 
-trace = function(A){
-  return(sum(diag(A)))
+trace = function(mat){
+  return(sum(diag(mat)))
 }

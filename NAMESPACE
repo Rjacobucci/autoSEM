@@ -2,7 +2,6 @@
 
 export(aco_rj)
 export(autoSEM)
-export(d)
 export(multFac)
 export(tabu_rj)
 export(trace)

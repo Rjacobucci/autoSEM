@@ -7,15 +7,21 @@
 aco_rj(size, iters, fitness, criterion)
 }
 \arguments{
-\item{size}{}
+\item{size}{Tabu list size. This is the number of variables * factors.}
 
-\item{iters}{}
+\item{iters}{Maximum number of iterations to allow.}
+
+\item{fitness}{Fitness function to use.}
+
+\item{criterion}{Criterion to use.}
 }
 \description{
 Implementation of ant colony optimization by ross jacobucci
 }
 \examples{
+\dontrun{
 aco_rj()
+}
 }
 \keyword{aco_rj}
 

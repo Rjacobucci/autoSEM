@@ -2,18 +2,24 @@
 % Please edit documentation in R/trace.R
 \name{trace}
 \alias{trace}
-\title{Calculates the trace of a matrix}
+\title{Calculates the trace of a matrix.}
 \usage{
-trace(A)
+trace(mat)
 }
 \arguments{
-\item{A}{matrix}
+\item{mat}{A matrix.}
+}
+\value{
+The sum of the diagonal entries in \code{mat}.
 }
 \description{
-Calculates the trace of a matrix
+Calculates the trace of a matrix.
 }
 \examples{
-trace()
+\dontrun{
+mm = matrix(c(1,2,3,4),2,2)
+trace(mm)
+}
 }
 \keyword{trace}
 

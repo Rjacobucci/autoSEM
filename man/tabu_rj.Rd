@@ -7,15 +7,19 @@
 tabu_rj(size, iters, fitness)
 }
 \arguments{
-\item{size}{}
+\item{size}{Tabu list size. This is the number of variables * factors.}
 
-\item{iters}{}
+\item{iters}{Maximum number of iterations to allow.}
+
+\item{fitness}{Fitness function to use.}
 }
 \description{
 Implementation of tabu search by ross jacobucci
 }
 \examples{
+\dontrun{
 tabu_rj()
+}
 }
 \keyword{tabu_rj}
 

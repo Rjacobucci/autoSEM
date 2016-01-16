@@ -1,10 +1,13 @@
 Package: autoSEM
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1
+Title: Performs Specification Search in Structural Equation Models
+Version: 0.0.900
 Date: 2015-09-22
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Ross Jacobucci
+Maintainer: Ross Jacobucci <rcjacobuc@gmail>
+Description: Implements multiple heuristic search algorithms for 
+	      automatically creating structural equation models.
+License: GPL (>= 2)
 LazyData: TRUE
+Depends: lavaan, snowfall
+Imports: GA, rgenoud, tabuSearch, RcppDE, hydroPSO,NMOF
