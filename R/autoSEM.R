@@ -2,13 +2,25 @@
 #'     for specification search.
 #'
 #'
-#' @param method which optimization algorithm to use.
+#' @param method which optimization algorithm to use. Currently, it is only
+#'        recommended to use "GA" for the genetic algorithm from the GA
+#'        package, "aco_rj", an implementation of the ant colony
+#'        algorithm by Ross Jacobucci, and "tabu_rj", an implementation of
+#'        the Tabu search procedure by Ross Jacobucci. The latter two
+#'        algorithms are based on the book chapter by Marcoulides &
+#'        Leite, 2013. The other methods: "pso", "NMOF", "DEoptim",
+#'        "tabuSearch", and "rgenoud" are all based on real-value
+#'        optimization, not binary strings. This substantially increases
+#'        the computation time and these methods are not currently
+#'        recommended for use.
+#'
 #' @param data a required dataset to search with.
 #' @param nfac the number of factors to test.
 #' @param varList list containing the names of the
 #'        variables to use from the dataset.
 #' @param criterion The fit index to use as a criterion for
-#'        choosing the best model.
+#'        choosing the best model. Current options are "NCP",
+#'        "RMSEA", and "BIC".
 #' @param minInd The minimum number of indicators per factor.
 #' @param stdlv Whether to use standardized factor loadings
 #'        (setting factor variance(s) to 1).
@@ -237,15 +249,32 @@ autoSEM <- function(method="tabuSearch",
       out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
     }
   }else if(method=="tabuSearch"){
+
+    if (!requireNamespace("tabuSearch", quietly = TRUE)) {
+      stop("tabuSearch needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+
     out = tabuSearch::tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="tabu_rj"){
     out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
   }else if(method=="aco_rj"){
     out = aco_rj(size=p_length*nfac,iters=aco.iters,fitness=fitness,criterion=criterion)
   }else if(method=="rgenoud"){
+
+    if (!requireNamespace("rgenoud", quietly = TRUE)) {
+      stop("rgenoud needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+
     dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
     out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
   }else if(method=="pso"){
+
+    if (!requireNamespace("hydroPSO", quietly = TRUE)) {
+      stop("hydroPSO needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
 
     out = hydroPSO::hydroPSO(rep(0.5,p_length*nfac),fitness,
                              lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac))
@@ -253,10 +282,22 @@ autoSEM <- function(method="tabuSearch",
     #out = pso::psoptim(rep(0.5,p_length*nfac),fitness,
     #                         lower=0,upper=1)
   }else if(method=="NMOF"){
-    fitness(rep(0.5,p_length*nfac))
+
+    if (!requireNamespace("NMOF", quietly = TRUE)) {
+      stop("NMOF needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+
+    #fitness(rep(0.5,p_length*nfac))
     algo=list(nB=p_length*nfac)
     out = NMOF::GAopt(fitness,algo=algo)
   }else if(method=="DEoptim"){
+
+    if (!requireNamespace("RcppDE", quietly = TRUE)) {
+      stop("RcppDE needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+
     out = RcppDE::DEoptim(fitness,lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac),
                           control=DEoptim.control(NP=9000))
   }

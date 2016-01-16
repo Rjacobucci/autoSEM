@@ -10,7 +10,17 @@ autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
   niter = 30, parallel = "no", CV = FALSE, aco.iters = 100)
 }
 \arguments{
-\item{method}{which optimization algorithm to use.}
+\item{method}{which optimization algorithm to use. Currently, it is only
+       recommended to use "GA" for the genetic algorithm from the GA
+       package, "aco_rj", an implementation of the ant colony
+       algorithm by Ross Jacobucci, and "tabu_rj", an implementation of
+       the Tabu search procedure by Ross Jacobucci. The latter two
+       algorithms are based on the book chapter by Marcoulides &
+       Leite, 2013. The other methods: "pso", "NMOF", "DEoptim",
+       "tabuSearch", and "rgenoud" are all based on real-value
+       optimization, not binary strings. This substantially increases
+       the computation time and these methods are not currently
+       recommended for use.}
 
 \item{data}{a required dataset to search with.}
 
@@ -20,7 +30,8 @@ autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
 variables to use from the dataset.}
 
 \item{criterion}{The fit index to use as a criterion for
-choosing the best model.}
+choosing the best model. Current options are "NCP",
+"RMSEA", and "BIC".}
 
 \item{minInd}{The minimum number of indicators per factor.}
 

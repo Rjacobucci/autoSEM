@@ -9,5 +9,14 @@ Description: Implements multiple heuristic search algorithms for
 	      automatically creating structural equation models.
 License: GPL (>= 2)
 LazyData: TRUE
-Depends: lavaan, snowfall
-Imports: GA, rgenoud, tabuSearch, RcppDE, hydroPSO,NMOF
+Depends:
+	lavaan
+Imports: 
+    snowfall,
+    GA
+Suggest: 
+    rgenoud, 
+    tabuSearch, 
+    RcppDE, 
+    hydroPSO,
+    NMOF
