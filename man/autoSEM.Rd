@@ -7,7 +7,7 @@
 \usage{
 autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
   criterion = "BIC", minInd = 3, stdlv = TRUE, orth = TRUE,
-  niter = 30, parallel = "no", CV = FALSE, aco.iters = 100)
+  niter = 30, parallel = "no", CV = FALSE)
 }
 \arguments{
 \item{method}{which optimization algorithm to use. Currently, it is only
@@ -47,8 +47,6 @@ Note that this is only applicable for the GA package at this time.}
 
 \item{CV}{Whether to use cross-validation for choosing the best model. The
 default is to use fit indices without CV.}
-
-\item{aco.iters}{Number of iterations to allow for the ant colony algorithm.}
 }
 \description{
 This function houses a number of different heuristic optimization algorithms

@@ -30,7 +30,6 @@
 #'        Note that this is only applicable for the GA package at this time.
 #' @param CV Whether to use cross-validation for choosing the best model. The
 #'        default is to use fit indices without CV.
-#' @param aco.iters Number of iterations to allow for the ant colony algorithm.
 #' @keywords autoSEM
 #' @export
 #' @examples
@@ -48,8 +47,7 @@ autoSEM <- function(method="tabuSearch",
                     orth=TRUE,
                     niter=30,
                     parallel="no",
-                    CV=FALSE,
-                    aco.iters=100){
+                    CV=FALSE){
   ret <- list()
   options(warn=2)
 
@@ -102,7 +100,7 @@ autoSEM <- function(method="tabuSearch",
             }else if(method=="tabuSearch"){
               0
             }else if(method=="rgenoud" | method=="tabu_rj" | method=="aco_rj"){
-              99999999
+              1e10
             }
           }
         }
@@ -157,13 +155,13 @@ autoSEM <- function(method="tabuSearch",
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
         #return(-99999999)
-        -99999999
+        -1e10
       }else if(method=="tabuSearch"){
         #return(0)
         0
       }else if(method == "rgenoud" | method=="pso" | method=="NMOF" |
                method=="DEoptim" | method=="tabu_rj" | method=="aco_rj"){
-        9999999999
+        1e10
       }
       }else{
       if(CV==F){
@@ -172,6 +170,11 @@ autoSEM <- function(method="tabuSearch",
         RMSEA = fits.lav["rmsea"]
         NCP = d(fits.lav["chisq"],fits.lav["df"],fits.lav["ntotal"])
       }else if(CV==T){
+
+        if(criterion=="BIC"){
+          stop("Only use CV=F with BIC")
+        }
+
         df=outt@Fit@test[[1]]$df
         cov.order = outt@Data@ov.names
         cov.test = cov(data_test[,unlist(cov.order)])
@@ -182,6 +185,11 @@ autoSEM <- function(method="tabuSearch",
         NCP = d(chisq.test,df,N)
         RMSEA = rmsea(NCP,df)
       }else if(CV == "boot"){
+
+        if(criterion=="BIC"){
+          stop("Only use CV=F with BIC")
+        }
+
         RMSEA.rep <- rep(NA,100)
         NCP.rep <- rep(NA,100)
         impcov = fitted(outt)$cov
@@ -259,7 +267,7 @@ autoSEM <- function(method="tabuSearch",
   }else if(method=="tabu_rj"){
     out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
   }else if(method=="aco_rj"){
-    out = aco_rj(size=p_length*nfac,iters=aco.iters,fitness=fitness,criterion=criterion)
+    out = aco_rj(size=p_length*nfac,iters=niter,fitness=fitness,criterion=criterion)
   }else if(method=="rgenoud"){
 
     if (!requireNamespace("rgenoud", quietly = TRUE)) {
