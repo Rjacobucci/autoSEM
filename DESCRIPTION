@@ -5,18 +5,18 @@ Version: 0.0.900
 Date: 2015-09-22
 Author: Ross Jacobucci
 Maintainer: Ross Jacobucci <rcjacobuc@gmail>
-Description: Implements multiple heuristic search algorithms for 
+Description: Implements multiple heuristic search algorithms for
 	      automatically creating structural equation models.
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:
-	lavaan
-Imports: 
-    snowfall,
+	lavaan,
+	snowfall
+Imports:
     GA
-Suggest: 
-    rgenoud, 
-    tabuSearch, 
-    RcppDE, 
+Suggest:
+    rgenoud,
+    tabuSearch,
+    RcppDE,
     hydroPSO,
     NMOF

@@ -7,7 +7,8 @@
 \usage{
 autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
   criterion = "BIC", minInd = 3, stdlv = TRUE, orth = TRUE,
-  niter = 30, parallel = "no", CV = FALSE)
+  niter = 30, parallel = "no", CV = FALSE, min.improve = niter,
+  seed = NULL)
 }
 \arguments{
 \item{method}{which optimization algorithm to use. Currently, it is only
@@ -31,7 +32,8 @@ variables to use from the dataset.}
 
 \item{criterion}{The fit index to use as a criterion for
 choosing the best model. Current options are "NCP",
-"RMSEA", and "BIC".}
+"RMSEA","AIC", "BIC", and "BIC2", which is the sample
+size adjusted BIC.}
 
 \item{minInd}{The minimum number of indicators per factor.}
 
@@ -47,6 +49,11 @@ Note that this is only applicable for the GA package at this time.}
 
 \item{CV}{Whether to use cross-validation for choosing the best model. The
 default is to use fit indices without CV.}
+
+\item{min.improve}{Number of iterations to wait for improvement
+before breaking.}
+
+\item{seed}{random seed number.}
 }
 \description{
 This function houses a number of different heuristic optimization algorithms

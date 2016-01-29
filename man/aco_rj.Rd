@@ -4,7 +4,7 @@
 \alias{aco_rj}
 \title{Implementation of ant colony optimization by ross jacobucci}
 \usage{
-aco_rj(size, iters, fitness, criterion)
+aco_rj(size, iters, fitness, criterion, min.improve, seed)
 }
 \arguments{
 \item{size}{Tabu list size. This is the number of variables * factors.}
@@ -14,6 +14,11 @@ aco_rj(size, iters, fitness, criterion)
 \item{fitness}{Fitness function to use.}
 
 \item{criterion}{Criterion to use.}
+
+\item{min.improve}{Number of iterations to wait for improvement
+before breaking.}
+
+\item{seed}{Random number seed.}
 }
 \description{
 Implementation of ant colony optimization by ross jacobucci

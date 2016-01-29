@@ -4,7 +4,7 @@
 \alias{tabu_rj}
 \title{Implementation of tabu search by ross jacobucci}
 \usage{
-tabu_rj(size, iters, fitness)
+tabu_rj(size, iters, fitness, min.improve, seed)
 }
 \arguments{
 \item{size}{Tabu list size. This is the number of variables * factors.}
@@ -12,6 +12,11 @@ tabu_rj(size, iters, fitness)
 \item{iters}{Maximum number of iterations to allow.}
 
 \item{fitness}{Fitness function to use.}
+
+\item{min.improve}{Number of iterations to wait for improvement
+before breaking.}
+
+\item{seed}{Seed to use for random number generation.}
 }
 \description{
 Implementation of tabu search by ross jacobucci

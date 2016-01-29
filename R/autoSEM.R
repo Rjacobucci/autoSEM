@@ -20,7 +20,8 @@
 #'        variables to use from the dataset.
 #' @param criterion The fit index to use as a criterion for
 #'        choosing the best model. Current options are "NCP",
-#'        "RMSEA", and "BIC".
+#'        "RMSEA","AIC", "BIC", and "BIC2", which is the sample
+#'        size adjusted BIC.
 #' @param minInd The minimum number of indicators per factor.
 #' @param stdlv Whether to use standardized factor loadings
 #'        (setting factor variance(s) to 1).
@@ -30,6 +31,9 @@
 #'        Note that this is only applicable for the GA package at this time.
 #' @param CV Whether to use cross-validation for choosing the best model. The
 #'        default is to use fit indices without CV.
+#' @param min.improve Number of iterations to wait for improvement
+#'        before breaking.
+#' @param seed random seed number.
 #' @keywords autoSEM
 #' @export
 #' @examples
@@ -47,13 +51,17 @@ autoSEM <- function(method="tabuSearch",
                     orth=TRUE,
                     niter=30,
                     parallel="no",
-                    CV=FALSE){
+                    CV=FALSE,
+                    min.improve=niter,
+                    seed=NULL){
   ret <- list()
   options(warn=2)
 
-  #if(method != "tabuSearch" & method != "GA"){
-  #  stop("Only tabuSearch and GA are currently working well.")
-  #}
+  if(is.null(seed)==TRUE) seed = round(runif(1,0,1)*10000000,0)
+
+  if(method != "GA" & method != "tabu_rj" & method != "aco_rj"){
+    stop("Only GA, tabu_rj, and aco_rj are working well at this time.")
+  }
 
   if(CV==T){
     ids = sample(nrow(data),nrow(data)/2)
@@ -167,12 +175,14 @@ autoSEM <- function(method="tabuSearch",
       if(CV==F){
         fits.lav = lavaan::fitMeasures(outt)
         bic = fits.lav["bic"]
+        bic2 = fits.lav["bic2"]
+        aic = fits.lav["aic"]
         RMSEA = fits.lav["rmsea"]
         NCP = d(fits.lav["chisq"],fits.lav["df"],fits.lav["ntotal"])
       }else if(CV==T){
 
-        if(criterion=="BIC"){
-          stop("Only use CV=F with BIC")
+        if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
+          stop("Only use CV=F with BIC, BIC2, or AIC")
         }
 
         df=outt@Fit@test[[1]]$df
@@ -186,8 +196,8 @@ autoSEM <- function(method="tabuSearch",
         RMSEA = rmsea(NCP,df)
       }else if(CV == "boot"){
 
-        if(criterion=="BIC"){
-          stop("Only use CV=F with BIC")
+        if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
+          stop("Only use CV=F with BIC, BIC2, or AIC")
         }
 
         RMSEA.rep <- rep(NA,100)
@@ -212,16 +222,24 @@ autoSEM <- function(method="tabuSearch",
     if(method == "tabuSearch" | method== "GA"){
       if(criterion=="BIC"){
         return_val = 100 /bic
+      }else if(criterion=="BIC2"){
+        return_val = 100 /bic2
+      }else if(criterion=="AIC"){
+        return_val = 100 /aic
       }else if(criterion=="RMSEA"){
         return_val= 1 - RMSEA
       }else if(criterion=="NCP"){
-        return_val = 10/NCP
+        return_val = NCP
       }
     }else if(method=="rgenoud" | method == "pso" |
              method == "NMOF" | method=="DEoptim" |
              method=="tabu_rj" | method=="aco_rj"){
       if(criterion=="BIC"){
         return_val = bic
+      }else if(criterion=="BIC2"){
+        return_val = bic2
+      }else if(criterion=="AIC"){
+        return_val = aic
       }else if(criterion=="RMSEA"){
         return_val= RMSEA
       }else if(criterion=="NCP"){
@@ -251,11 +269,11 @@ autoSEM <- function(method="tabuSearch",
   p_length = length(unlist(varList))
 
   if(method=="GA"){
-    if(parallel=="no"){
+   # if(parallel=="no"){
       out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
-    }else if(parallel=="yes"){
-      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
-    }
+      # }else if(parallel=="yes"){
+      #   out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
+      # }
   }else if(method=="tabuSearch"){
 
     if (!requireNamespace("tabuSearch", quietly = TRUE)) {
@@ -265,9 +283,10 @@ autoSEM <- function(method="tabuSearch",
 
     out = tabuSearch::tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
   }else if(method=="tabu_rj"){
-    out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness)
+    out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness,min.improve=min.improve,seed=seed)
   }else if(method=="aco_rj"){
-    out = aco_rj(size=p_length*nfac,iters=niter,fitness=fitness,criterion=criterion)
+    out = aco_rj(size=p_length*nfac,iters=niter,fitness=fitness,
+                 criterion=criterion,min.improve=min.improve,seed=seed)
   }else if(method=="rgenoud"){
 
     if (!requireNamespace("rgenoud", quietly = TRUE)) {
@@ -311,15 +330,15 @@ autoSEM <- function(method="tabuSearch",
   }
 
   if(method=="GA"){
-    if(criterion=="BIC"){
-      ret$fit = 100/(summary(out)$fitness)
+    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
+      ret$fit = 100/out@fitnessValue
     }else if(criterion=="RMSEA"){
-      ret$fit = 1- (summary(out)$fitness)
+      #ret$fit = 1- out$fitness
     }else if(criterion=="NCP"){
-      ret$fit = 1/NCP
+      #ret$fit = out$fitness
     }
   }else if(method=="rgenoud" | method=="pso" | method=="tabu_rj" | method=="aco_rj"){
-    if(criterion=="BIC"){
+    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
       ret$fit = out$value
     }else if(criterion=="RMSEA"){
       ret$fit = out$value
@@ -327,13 +346,13 @@ autoSEM <- function(method="tabuSearch",
       ret$fit = out$value
     }
   }else if(method=="tabuSearch"){
-    if(criterion=="BIC"){
+    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
       ret$fit = 100/max(out$eUtilityKeep)
     }else if(criterion=="RMSEA"){
       ret$fit = 1-max(out$eUtilityKeep)
     }
   }else if(method=="NMOF"){
-    if(criterion=="BIC"){
+    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
       ret$fit = out$OFvalue
     }else if(criterion=="RMSEA"){
       ret$fit = out$OFvalue
@@ -341,14 +360,14 @@ autoSEM <- function(method="tabuSearch",
   }
 
   if(method == "GA" | method == "rgenoud" | method=="pso" |
-     method=="NMOF" | method=="aco_rj"){
+     method=="NMOF" | method=="aco_rj" | method=="tabu_rj"){
     ret$out = out
   }
 
   if(method=="tabuSearch"){
     ret$solution = out$configKeep[out$eUtilityKeep == max(out$eUtilityKeep),]
   }else if(method=="GA"){
-    ret$solution = summary(out)$solution
+    ret$solution = out@solution
   }else if(method=="rgenoud" | method=="pso"){
     ret$solution = round(out$par)
   }else if(method=="NMOF"){

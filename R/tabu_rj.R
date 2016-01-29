@@ -3,6 +3,9 @@
 #' @param size Tabu list size. This is the number of variables * factors.
 #' @param iters Maximum number of iterations to allow.
 #' @param fitness Fitness function to use.
+#' @param min.improve Number of iterations to wait for improvement
+#'        before breaking.
+#' @param seed Seed to use for random number generation.
 #' @keywords tabu_rj
 #' @export
 #' @examples
@@ -11,15 +14,19 @@
 #'}
 
 
-tabu_rj <- function(size, iters,fitness){
+tabu_rj <- function(size, iters,fitness,min.improve,seed){
 
   string = matrix(NA,1,size)
+  set.seed(seed)
   for(i in 1:size) string[i] = rbinom(1,1,prob=0.5)
 
+  n.models.run = 0
+  n.models.run2 = 0
+  iter.no.improve = 0
   out = list()
   K.best = 999999999
   best.string <- rep(NA,length(string))
-  taboo.list <- matrix(NA,100,length(string))
+  taboo.list <- matrix(NA,length(string)*5,length(string))
   count=0
 
 while(count < iters){
@@ -54,7 +61,7 @@ while(count < iters){
   }
 
   if(nrow(string.mat2)==0){
-    break
+    stop("no matches")
   }
 
 
@@ -65,34 +72,48 @@ while(count < iters){
     K.vec[i] = fitness(string.mat2[i,])
   }
 
+  n.models.run = n.models.run + sum(is.na(K.vec) == FALSE)
+  n.models.run2 = n.models.run2 + sum(K.vec > -1 )
+
   pos = which(K.vec == min(K.vec))
 
   if(min(K.vec) < K.best){
     K.best=min(K.vec)
     best.string = string.mat2[pos,]
+    iter.no.improve = 0
+  }else{
+    iter.no.improve = iter.no.improve + 1
   }
 
-  new.taboo = rbind(taboo.list,string.mat2)
-  if(sum(is.na(taboo.list[,1])) >0){
-    new.taboo = new.taboo[-c(1:sum(is.na(taboo.list[,1]))),]
-    taboo.list=new.taboo
+  if(iter.no.improve == min.improve){
+    break
   }
 
-  if(nrow(new.taboo)>100){
-    new.taboo2 = new.taboo[(nrow(new.taboo)-100):nrow(new.taboo),]
-    taboo.list=new.taboo2
-  }
+  taboo.list = rbind(taboo.list[length(string):(length(string)*5),],string.mat)
+#  if(sum(is.na(taboo.list[,1])) >0){
+  #    #new.taboo = new.taboo[-c(1:sum(is.na(taboo.list[,1]))),]
+  #    taboo.list=new.taboo
+  #  }
+
+  #  if(nrow(taboo.list)>100){
+  #    new.taboo2 = new.taboo[(nrow(new.taboo)-100):nrow(new.taboo),]
+  #    taboo.list=new.taboo2
+  #  }
 
   if(length(pos)>1){
-    string=string.mat[1,]
+    string=string.mat2[pos[1],]
   }else{
-    string=string.mat[pos,]
+    string=string.mat2[pos,]
   }
 
 }
 out$solution = best.string
 out$value = K.best
-
+out$n.models.run = n.models.run
+out$n.models.run2 = n.models.run2
+#out$tabu_list = taboo.list
+out$count = count
+out$iter.no.improve = iter.no.improve
 out
 
 }

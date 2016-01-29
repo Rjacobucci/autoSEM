@@ -30,6 +30,9 @@
 #' @param niter The maximum number of iterations to all.
 #' @param CV Whether to use cross-validation for choosing the best model. The
 #'        default is to use fit indices without CV.
+#' @param min.improve Number of iterations to wait for improvement
+#'        before breaking.
+#' @param seed random seed number.
 #' @keywords multFac
 #' @export
 #' @examples
@@ -50,7 +53,9 @@ multFac <- function(facList,
                     stdlv=TRUE,
                     orth=TRUE,
                     niter=30,
-                    CV=FALSE){
+                    CV=FALSE,
+                    min.improve=niter,
+                    seed=NULL){
 
   if(length(facList) < ncore){
     ncore = length(facList)
@@ -64,13 +69,14 @@ multFac <- function(facList,
       snowfall::sfExport("data","facList","criterion","CV","orth",
                          "stdlv","minInd","niter","varList","method")
       snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
-      snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch);
-      snowfall::sfLibrary(rgenoud)
+      snowfall::sfLibrary(GA);#snowfall::sfLibrary(tabuSearch);
+      #snowfall::sfLibrary(rgenoud)
 
       ret.auto <- function(facs){
 
         ret = autoSEM(method=method,data=data,nfac=facs,orth=orth,CV=CV,
-                      varList=varList,criterion=criterion,minInd=minInd,niter=niter)
+                      varList=varList,criterion=criterion,minInd=minInd,
+                      niter=niter,min.improve=min.improve)
         ret
       }
 
@@ -81,16 +87,17 @@ multFac <- function(facList,
     }else if(Sys.info()[1]=="Darwin"){
 
     snowfall::sfStop()
-    snowfall::sfInit( parallel=TRUE, cpus=ncore)
+    snowfall::sfInit(parallel=TRUE, cpus=ncore)
     snowfall::sfExport("data","facList","criterion","CV","orth",
                        "stdlv","minInd","niter","varList","method")
-    snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);snowfall::sfLibrary(hydroPSO)
-    snowfall::sfLibrary(GA);snowfall::sfLibrary(tabuSearch);snowfall::sfLibrary(rgenoud)
+    snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);#snowfall::sfLibrary(hydroPSO)
+    snowfall::sfLibrary(GA);#snowfall::sfLibrary(tabuSearch);snowfall::sfLibrary(rgenoud)
 
     ret.auto <- function(facs){
 
       ret = autoSEM(method=method,data=data,nfac=facs,orth=orth,CV=CV,
-                    varList=varList,criterion=criterion,minInd=minInd,niter=niter)
+                    varList=varList,criterion=criterion,minInd=minInd,
+                    niter=niter,min.improve=min.improve)
       ret
     }
 
@@ -103,7 +110,8 @@ multFac <- function(facList,
 
     for(y in 1:length(facList)){
       out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],orth=orth,CV=CV,
-                         varList=varList,criterion=criterion,minInd=minInd,niter=niter)
+                         varList=varList,criterion=criterion,minInd=minInd,
+                         niter=niter,min.improve=min.improve)
     }
   }
 

@@ -6,7 +6,8 @@
 \usage{
 multFac(facList, parallel = "no", ncore = 1, method = "tabuSearch",
   data = NULL, varList = NULL, criterion = "BIC", minInd = 3,
-  stdlv = TRUE, orth = TRUE, niter = 30, CV = FALSE)
+  stdlv = TRUE, orth = TRUE, niter = 30, CV = FALSE,
+  min.improve = niter, seed = NULL)
 }
 \arguments{
 \item{facList}{A vector containing the number of factors to test. Ex: ll = c(1,2,3)}
@@ -49,6 +50,11 @@ choosing the best model. Current options are "NCP",
 
 \item{CV}{Whether to use cross-validation for choosing the best model. The
 default is to use fit indices without CV.}
+
+\item{min.improve}{Number of iterations to wait for improvement
+before breaking.}
+
+\item{seed}{random seed number.}
 }
 \description{
 Tests multiple factors
