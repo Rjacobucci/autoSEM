@@ -119,7 +119,7 @@ while(count < iters){
 
 
   if(is.na(current.fit)==FALSE & current.fit < 1e8){ # & val.add != 0){
-    #fit.avg = (fit.avg*count2 +current.fit)/(count2+1)
+    fit.avg = (fit.avg*count2 +current.fit)/(count2+1)
     count2 = count2+1
   }
 

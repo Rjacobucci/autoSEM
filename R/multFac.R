@@ -24,9 +24,8 @@
 #'        choosing the best model. Current options are "NCP",
 #'        "RMSEA", and "BIC".
 #' @param minInd The minimum number of indicators per factor.
-#' @param stdlv Whether to use standardized factor loadings
-#'        (setting factor variance(s) to 1).
-#' @param orth Whether to specify the factor covariances as orthogonal.
+#' @param lav.control Additional arguments to pass to cfa(). An example is
+#'        is setting lav.control = list(orth=FALSE,std.lv=TRUE).
 #' @param niter The maximum number of iterations to all.
 #' @param CV Whether to use cross-validation for choosing the best model. The
 #'        default is to use fit indices without CV.
@@ -50,8 +49,7 @@ multFac <- function(facList,
                     varList=NULL,
                     criterion="BIC",
                     minInd=3,
-                    stdlv=TRUE,
-                    orth=TRUE,
+                    lav.control = list(orth=TRUE,std.lv=TRUE),
                     niter=30,
                     CV=FALSE,
                     min.improve=niter,
@@ -74,7 +72,8 @@ multFac <- function(facList,
 
       ret.auto <- function(facs){
 
-        ret = autoSEM(method=method,data=data,nfac=facs,orth=orth,CV=CV,
+        ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,
+                      lav.control=lav.control,
                       varList=varList,criterion=criterion,minInd=minInd,
                       niter=niter,min.improve=min.improve)
         ret
@@ -95,7 +94,8 @@ multFac <- function(facList,
 
     ret.auto <- function(facs){
 
-      ret = autoSEM(method=method,data=data,nfac=facs,orth=orth,CV=CV,
+      ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,
+                    lav.control=lav.control,
                     varList=varList,criterion=criterion,minInd=minInd,
                     niter=niter,min.improve=min.improve)
       ret
@@ -109,7 +109,8 @@ multFac <- function(facList,
     out = list()
 
     for(y in 1:length(facList)){
-      out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],orth=orth,CV=CV,
+      out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],CV=CV,
+                         lav.control=lav.control,
                          varList=varList,criterion=criterion,minInd=minInd,
                          niter=niter,min.improve=min.improve)
     }

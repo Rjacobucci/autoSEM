@@ -14,7 +14,7 @@ Depends:
 	snowfall
 Imports:
     GA
-Suggest:
+Suggests:
     rgenoud,
     tabuSearch,
     RcppDE,

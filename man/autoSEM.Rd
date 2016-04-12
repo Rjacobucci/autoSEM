@@ -6,9 +6,9 @@
     for specification search.}
 \usage{
 autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
-  criterion = "BIC", minInd = 3, stdlv = TRUE, orth = TRUE,
-  niter = 30, parallel = "no", CV = FALSE, min.improve = niter,
-  seed = NULL)
+  criterion = "BIC", minInd = 3, lav.control = list(orth = TRUE, std.lv =
+  TRUE), niter = 30, parallel = "no", CV = "boot", R = 100,
+  min.improve = niter, seed = NULL)
 }
 \arguments{
 \item{method}{which optimization algorithm to use. Currently, it is only
@@ -37,10 +37,8 @@ size adjusted BIC.}
 
 \item{minInd}{The minimum number of indicators per factor.}
 
-\item{stdlv}{Whether to use standardized factor loadings
-(setting factor variance(s) to 1).}
-
-\item{orth}{Whether to specify the factor covariances as orthogonal.}
+\item{lav.control}{Additional arguments to pass to cfa(). An example is
+is setting lav.control = list(orth=FALSE,std.lv=TRUE).}
 
 \item{niter}{The maximum number of iterations to all.}
 
@@ -49,6 +47,8 @@ Note that this is only applicable for the GA package at this time.}
 
 \item{CV}{Whether to use cross-validation for choosing the best model. The
 default is to use fit indices without CV.}
+
+\item{R}{If using bootstrap, how many samples to take? Default is 100}
 
 \item{min.improve}{Number of iterations to wait for improvement
 before breaking.}

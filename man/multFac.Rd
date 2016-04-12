@@ -6,7 +6,7 @@
 \usage{
 multFac(facList, parallel = "no", ncore = 1, method = "tabuSearch",
   data = NULL, varList = NULL, criterion = "BIC", minInd = 3,
-  stdlv = TRUE, orth = TRUE, niter = 30, CV = FALSE,
+  lav.control = list(orth = TRUE, std.lv = TRUE), niter = 30, CV = FALSE,
   min.improve = niter, seed = NULL)
 }
 \arguments{
@@ -41,10 +41,8 @@ choosing the best model. Current options are "NCP",
 
 \item{minInd}{The minimum number of indicators per factor.}
 
-\item{stdlv}{Whether to use standardized factor loadings
-(setting factor variance(s) to 1).}
-
-\item{orth}{Whether to specify the factor covariances as orthogonal.}
+\item{lav.control}{Additional arguments to pass to cfa(). An example is
+is setting lav.control = list(orth=FALSE,std.lv=TRUE).}
 
 \item{niter}{The maximum number of iterations to all.}
 

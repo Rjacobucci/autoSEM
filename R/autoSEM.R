@@ -22,20 +22,23 @@
 #'        choosing the best model. Current options are "NCP",
 #'        "RMSEA","AIC", "BIC", and "BIC2", which is the sample
 #'        size adjusted BIC.
+#' @param lav.control Additional arguments to pass to cfa(). An example is
+#'        is setting lav.control = list(orth=FALSE,std.lv=TRUE).
 #' @param minInd The minimum number of indicators per factor.
-#' @param stdlv Whether to use standardized factor loadings
-#'        (setting factor variance(s) to 1).
-#' @param orth Whether to specify the factor covariances as orthogonal.
 #' @param niter The maximum number of iterations to all.
 #' @param parallel Whether to use the snowfall package for parallelization.
 #'        Note that this is only applicable for the GA package at this time.
 #' @param CV Whether to use cross-validation for choosing the best model. The
 #'        default is to use fit indices without CV.
+#' @param R If using bootstrap, how many samples to take? Default is 100
 #' @param min.improve Number of iterations to wait for improvement
 #'        before breaking.
 #' @param seed random seed number.
 #' @keywords autoSEM
 #' @export
+#' @import lavaan
+#' @import snowfall
+#' @import GA
 #' @examples
 #' \dontrun{
 #' autoSEM()
@@ -47,11 +50,11 @@ autoSEM <- function(method="tabuSearch",
                     varList=NULL,
                     criterion="BIC",
                     minInd=3,
-                    stdlv=TRUE,
-                    orth=TRUE,
+                    lav.control = list(orth=TRUE,std.lv=TRUE),
                     niter=30,
                     parallel="no",
-                    CV=FALSE,
+                    CV="boot",
+                    R=100,
                     min.improve=niter,
                     seed=NULL){
   ret <- list()
@@ -158,7 +161,7 @@ autoSEM <- function(method="tabuSearch",
     rmsea = function(ncp,df) sqrt(ncp/df)
 
 
-    outt = try(lavaan::cfa(fmld,data_train,orthogonal=orth,std.lv=stdlv),silent=TRUE)
+    outt = try(lavaan::cfa(fmld,data_train,lav.control),silent=TRUE)
 
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
@@ -200,18 +203,28 @@ autoSEM <- function(method="tabuSearch",
           stop("Only use CV=F with BIC, BIC2, or AIC")
         }
 
-        RMSEA.rep <- rep(NA,100)
-        NCP.rep <- rep(NA,100)
-        impcov = fitted(outt)$cov
+       # RMSEA.rep <- rep(NA,R)
+        #NCP.rep <- rep(NA,R)
+        #impcov = fitted(outt)$cov
         N=nrow(data_train)
         df=outt@Fit@test[[1]]$df
-        for(i in 1:100){
-          ids <- sample(nrow(data_train),nrow(data_train),replace=TRUE)
-          new.dat <- data_train[ids,]
-          cov.boot <- cov(new.dat[,outt@pta$vnames$ov.nox[[1]]])
-          fit.boot = 0.5*(log(det(impcov)) + trace(cov.boot %*% solve(impcov)) - log(det(cov.boot))  - p)
-          chisq.boot = N*fit.boot
-          NCP.rep[i] = d(chisq.boot,df,N)
+        #for(i in 1:100){
+        #  ids <- sample(nrow(data_train),nrow(data_train),replace=TRUE)
+        #  new.dat <- data_train[ids,]
+        #  cov.boot <- cov(new.dat[,outt@pta$vnames$ov.nox[[1]]])
+        #  fit.boot = 0.5*(log(det(impcov)) + trace(cov.boot %*% solve(impcov)) - log(det(cov.boot))  - p)
+        #  chisq.boot = N*fit.boot
+        #  NCP.rep[i] = d(chisq.boot,df,N)
+        #  RMSEA.rep[i] = rmsea(NCP.rep[i],df)
+        #}
+
+        fit.boot = bootstrapLavaan(outt,type="yuan",R=R)
+        chisq.boot = rep(NA,R)
+        NCP.rep = rep(NA,R)
+        RMSEA.rep = rep(NA,R)
+        for(i in 1:R){
+          chisq.boot[i] = N*fit.boot[i]
+          NCP.rep[i] = d(chisq.boot[i],df,N)
           RMSEA.rep[i] = rmsea(NCP.rep[i],df)
         }
         RMSEA <- mean(RMSEA.rep)
@@ -326,7 +339,7 @@ autoSEM <- function(method="tabuSearch",
     }
 
     out = RcppDE::DEoptim(fitness,lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac),
-                          control=DEoptim.control(NP=9000))
+                          control=RcppDE::DEoptim.control(NP=9000))
   }
 
   if(method=="GA"){
