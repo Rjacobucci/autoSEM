@@ -22,8 +22,6 @@
 #'        choosing the best model. Current options are "NCP",
 #'        "RMSEA","AIC", "BIC", and "BIC2", which is the sample
 #'        size adjusted BIC.
-#' @param lav.control Additional arguments to pass to cfa(). An example is
-#'        is setting lav.control = list(orth=FALSE,std.lv=TRUE).
 #' @param minInd The minimum number of indicators per factor.
 #' @param niter The maximum number of iterations to all.
 #' @param parallel Whether to use the snowfall package for parallelization.
@@ -34,6 +32,8 @@
 #' @param min.improve Number of iterations to wait for improvement
 #'        before breaking.
 #' @param seed random seed number.
+#' @param ... Additional arguments to pass to cfa(). An example is
+#'        is setting orth=FALSE,std.lv=TRUE.
 #' @keywords autoSEM
 #' @export
 #' @import lavaan
@@ -50,13 +50,13 @@ autoSEM <- function(method="tabuSearch",
                     varList=NULL,
                     criterion="BIC",
                     minInd=3,
-                    lav.control = list(orth=TRUE,std.lv=TRUE),
                     niter=30,
                     parallel="no",
                     CV="boot",
                     R=100,
                     min.improve=niter,
-                    seed=NULL){
+                    seed=NULL,
+                    ...){
   ret <- list()
   options(warn=2)
 
@@ -161,7 +161,7 @@ autoSEM <- function(method="tabuSearch",
     rmsea = function(ncp,df) sqrt(ncp/df)
 
 
-    outt = try(lavaan::cfa(fmld,data_train,lav.control),silent=TRUE)
+    outt = try(lavaan::cfa(fmld,data_train,...),silent=TRUE)
 
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
@@ -217,17 +217,20 @@ autoSEM <- function(method="tabuSearch",
         #  NCP.rep[i] = d(chisq.boot,df,N)
         #  RMSEA.rep[i] = rmsea(NCP.rep[i],df)
         #}
-
-        fit.boot = bootstrapLavaan(outt,type="yuan",R=R)
         chisq.boot = rep(NA,R)
         NCP.rep = rep(NA,R)
         RMSEA.rep = rep(NA,R)
-        for(i in 1:R){
-          chisq.boot[i] = N*fit.boot[i]
-          NCP.rep[i] = d(chisq.boot[i],df,N)
-          RMSEA.rep[i] = rmsea(NCP.rep[i],df)
+
+        fit.boot = try(bootstrapLavaan(fit,type="yuan",R=R,FUN=fitmeasures,fit.measures=c("chisq","rmsea")),silent=TRUE)
+        if(inherits(fit.boot, "try-error")) {
+          NCP = 9987
+          RMSEA = 9987
+        }else{
+          RMSEA <- mean(fit.boot[,2])
+          for(i in 1:R){
+            NCP.rep[i] = d(fit.boot[i,1],df,N)
+          }
         }
-        RMSEA <- mean(RMSEA.rep)
         NCP <- mean(NCP.rep)
 
       }
@@ -240,7 +243,7 @@ autoSEM <- function(method="tabuSearch",
       }else if(criterion=="AIC"){
         return_val = 100 /aic
       }else if(criterion=="RMSEA"){
-        return_val= 1 - RMSEA
+        return_val= RMSEA
       }else if(criterion=="NCP"){
         return_val = NCP
       }

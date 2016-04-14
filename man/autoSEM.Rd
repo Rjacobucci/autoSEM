@@ -6,9 +6,8 @@
     for specification search.}
 \usage{
 autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
-  criterion = "BIC", minInd = 3, lav.control = list(orth = TRUE, std.lv =
-  TRUE), niter = 30, parallel = "no", CV = "boot", R = 100,
-  min.improve = niter, seed = NULL)
+  criterion = "BIC", minInd = 3, niter = 30, parallel = "no",
+  CV = "boot", R = 100, min.improve = niter, seed = NULL, ...)
 }
 \arguments{
 \item{method}{which optimization algorithm to use. Currently, it is only
@@ -37,9 +36,6 @@ size adjusted BIC.}
 
 \item{minInd}{The minimum number of indicators per factor.}
 
-\item{lav.control}{Additional arguments to pass to cfa(). An example is
-is setting lav.control = list(orth=FALSE,std.lv=TRUE).}
-
 \item{niter}{The maximum number of iterations to all.}
 
 \item{parallel}{Whether to use the snowfall package for parallelization.
@@ -54,6 +50,9 @@ default is to use fit indices without CV.}
 before breaking.}
 
 \item{seed}{random seed number.}
+
+\item{...}{Additional arguments to pass to cfa(). An example is
+is setting orth=FALSE,std.lv=TRUE.}
 }
 \description{
 This function houses a number of different heuristic optimization algorithms

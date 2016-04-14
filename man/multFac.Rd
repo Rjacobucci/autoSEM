@@ -6,8 +6,7 @@
 \usage{
 multFac(facList, parallel = "no", ncore = 1, method = "tabuSearch",
   data = NULL, varList = NULL, criterion = "BIC", minInd = 3,
-  lav.control = list(orth = TRUE, std.lv = TRUE), niter = 30, CV = FALSE,
-  min.improve = niter, seed = NULL)
+  niter = 30, CV = FALSE, min.improve = niter, seed = NULL, ...)
 }
 \arguments{
 \item{facList}{A vector containing the number of factors to test. Ex: ll = c(1,2,3)}
@@ -41,9 +40,6 @@ choosing the best model. Current options are "NCP",
 
 \item{minInd}{The minimum number of indicators per factor.}
 
-\item{lav.control}{Additional arguments to pass to cfa(). An example is
-is setting lav.control = list(orth=FALSE,std.lv=TRUE).}
-
 \item{niter}{The maximum number of iterations to all.}
 
 \item{CV}{Whether to use cross-validation for choosing the best model. The
@@ -53,6 +49,9 @@ default is to use fit indices without CV.}
 before breaking.}
 
 \item{seed}{random seed number.}
+
+\item{...}{Additional arguments to pass to cfa(). An example is
+is setting orth=FALSE,std.lv=TRUE.}
 }
 \description{
 Tests multiple factors
