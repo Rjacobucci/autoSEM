@@ -64,8 +64,8 @@ multFac <- function(facList,
     if(Sys.info()[1] == "Windows"){
 
       snowfall::sfInit(parallel=TRUE, cpus=ncore)
-      snowfall::sfExport("data","facList","criterion","CV","orth",
-                         "stdlv","minInd","niter","varList","method")
+      snowfall::sfExport("data","facList","criterion","CV",
+                         "minInd","niter","varList","method")
       snowfall::sfLibrary(autoSEM); snowfall::sfLibrary(lavaan);
       snowfall::sfLibrary(GA);#snowfall::sfLibrary(tabuSearch);
       #snowfall::sfLibrary(rgenoud)
