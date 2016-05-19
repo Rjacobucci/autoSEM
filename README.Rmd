@@ -24,24 +24,18 @@ autoSEM is built upon the cfa function from the lavaan package. Currently, it is
 As a simple example, just looking at the indicators of a one factor model using the Holzinger Swineford (1939) dataset from the lavaan package:
 
 ```{r,eval=FALSE}
-
-
 library(lavaan)
 devtools::install_github("RJacobucci/autoSEM")
 library(autoSEM)
 
-
 myData =  HolzingerSwineford1939[,7:15]
-
 
 f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 
 out = autoSEM(method="GA",data=myData,nfac=1,
         varList=list(f1.vars),CV=F,std.lv=TRUE,
         criterion="NCP",minInd=3,niter=10)
-
 out
-
 ```
 
 ### The most important arguments to specify are:
