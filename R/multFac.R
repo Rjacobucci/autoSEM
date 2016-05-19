@@ -30,6 +30,7 @@
 #' @param min.improve Number of iterations to wait for improvement
 #'        before breaking.
 #' @param seed random seed number.
+#' @param std.lv Defaults to true. So lavaan uses all variables for each factor
 #' @param ... Additional arguments to pass to cfa(). An example is
 #'        is setting orth=FALSE,std.lv=TRUE.
 #' @keywords multFac
@@ -53,6 +54,7 @@ multFac <- function(facList,
                     CV=FALSE,
                     min.improve=niter,
                     seed=NULL,
+                    std.lv=TRUE,
                     ...){
 
   if(length(facList) < ncore){
@@ -72,7 +74,7 @@ multFac <- function(facList,
 
       ret.auto <- function(facs){
 
-        ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,
+        ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,,std.lv=std.lv,
                       ...,
                       varList=varList,criterion=criterion,minInd=minInd,
                       niter=niter,min.improve=min.improve)
@@ -94,7 +96,7 @@ multFac <- function(facList,
 
     ret.auto <- function(facs){
 
-      ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,
+      ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,,std.lv=std.lv,
                     ...,
                     varList=varList,criterion=criterion,minInd=minInd,
                     niter=niter,min.improve=min.improve)
@@ -109,7 +111,7 @@ multFac <- function(facList,
     out = list()
 
     for(y in 1:length(facList)){
-      out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],CV=CV,
+      out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],CV=CV,,std.lv=std.lv,
                          ...,
                          varList=varList,criterion=criterion,minInd=minInd,
                          niter=niter,min.improve=min.improve)

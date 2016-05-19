@@ -32,6 +32,7 @@
 #' @param min.improve Number of iterations to wait for improvement
 #'        before breaking.
 #' @param seed random seed number.
+#' @param std.lv Defaults to true. So lavaan uses all variables for each factor
 #' @param ... Additional arguments to pass to cfa(). An example is
 #'        is setting orth=FALSE,std.lv=TRUE.
 #' @keywords autoSEM
@@ -56,6 +57,7 @@ autoSEM <- function(method="tabuSearch",
                     R=100,
                     min.improve=niter,
                     seed=NULL,
+                    std.lv=TRUE,
                     ...){
   ret <- list()
   options(warn=2)
@@ -161,7 +163,7 @@ autoSEM <- function(method="tabuSearch",
     rmsea = function(ncp,df) sqrt(ncp/df)
 
 
-    outt = try(lavaan::cfa(fmld,data_train,...),silent=TRUE)
+    outt = try(lavaan::cfa(fmld,data_train,std.lv=std.lv,...),silent=TRUE)
 
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
@@ -384,6 +386,12 @@ autoSEM <- function(method="tabuSearch",
     ret$solution = out$configKeep[out$eUtilityKeep == max(out$eUtilityKeep),]
   }else if(method=="GA"){
     ret$solution = out@solution
+    if(criterion=="BIC"){
+      ret$fit <- 100/out@fitnessValue
+    }else{
+      ret$fit <- out@fitnessValue
+    }
+
   }else if(method=="rgenoud" | method=="pso"){
     ret$solution = round(out$par)
   }else if(method=="NMOF"){

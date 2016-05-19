@@ -69,7 +69,7 @@ while(count < iters){
       val.add = min(val.add,50)
     }else if(criterion=="NCP"){
       #val.add = round(100/(current.fit+1),0)
-      val.add = round((fit.avg - current.fit)*3,0)+1
+      val.add = round((best.sol - current.fit)*3,0)+1
       if(val.add < 0) val.add = 0
       val.add = min(val.add,50)
     }
@@ -119,7 +119,7 @@ while(count < iters){
 
 
   if(is.na(current.fit)==FALSE & current.fit < 1e8){ # & val.add != 0){
-    fit.avg = (fit.avg*count2 +current.fit)/(count2+1)
+#    fit.avg = (fit.avg*count2 +current.fit)/(count2+1)
     count2 = count2+1
   }
 
