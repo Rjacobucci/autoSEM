@@ -1,8 +1,8 @@
 Package: autoSEM
 Type: Package
 Title: Performs Specification Search in Structural Equation Models
-Version: 0.0.900
-Date: 2015-09-22
+Version: 0.1.0
+Date: 2016-05-19
 Author: Ross Jacobucci
 Maintainer: Ross Jacobucci <rcjacobuc@gmail>
 Description: Implements multiple heuristic search algorithms for

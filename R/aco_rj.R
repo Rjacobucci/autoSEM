@@ -1,21 +1,3 @@
-#' Implementation of ant colony optimization by ross jacobucci
-#'
-#'
-#' @param size Tabu list size. This is the number of variables * factors.
-#' @param iters Maximum number of iterations to allow.
-#' @param fitness Fitness function to use.
-#' @param criterion Criterion to use.
-#' @param min.improve Number of iterations to wait for improvement
-#'        before breaking.
-#' @param seed Random number seed.
-#' @keywords aco_rj
-#' @export
-#' @examples
-#' \dontrun{
-#' aco_rj()
-#'}
-
-
 
 aco_rj <- function(size, iters,fitness,criterion,min.improve,seed){
 
