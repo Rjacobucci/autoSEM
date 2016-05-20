@@ -23,7 +23,7 @@ f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 out = autoSEM(method="GA",data=myData,nfac=1,
         varList=list(f1.vars),CV=F,std.lv=TRUE,
         criterion="NCP",minInd=3,niter=10)
-out
+summary(out)
 ```
 
 ### The most important arguments to specify are:
