@@ -1,5 +1,5 @@
 
-tabu_rj <- function(size, iters,fitness,min.improve,seed){
+tabu <- function(size, iters,fitness,min.improve,seed){
 
   string = matrix(NA,1,size)
   set.seed(seed)

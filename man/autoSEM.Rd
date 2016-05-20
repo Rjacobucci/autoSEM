@@ -5,23 +5,19 @@
 \title{This function houses a number of different heuristic optimization algorithms
     for specification search.}
 \usage{
-autoSEM(method = "tabuSearch", data = NULL, nfac = NULL, varList = NULL,
-  criterion = "BIC", minInd = 3, niter = 30, parallel = "no",
-  CV = "boot", R = 100, min.improve = niter, seed = NULL,
-  std.lv = TRUE, ...)
+autoSEM(method = "GA", data = NULL, nfac = NULL, varList = NULL,
+  criterion = "BIC", minInd = 3, niter = "default", parallel = "no",
+  missing = "listwise", CV = "boot", R = 100, min.improve = niter,
+  seed = NULL, std.lv = TRUE, ...)
 }
 \arguments{
 \item{method}{which optimization algorithm to use. Currently, it is only
 recommended to use "GA" for the genetic algorithm from the GA
-package, "aco_rj", an implementation of the ant colony
-algorithm by Ross Jacobucci, and "tabu_rj", an implementation of
+package, "aco", an implementation of the ant colony
+algorithm by Ross Jacobucci, and "tabu", an implementation of
 the Tabu search procedure by Ross Jacobucci. The latter two
 algorithms are based on the book chapter by Marcoulides &
-Leite, 2013. The other methods: "pso", "NMOF", "DEoptim",
-"tabuSearch", and "rgenoud" are all based on real-value
-optimization, not binary strings. This substantially increases
-the computation time and these methods are not currently
-recommended for use.}
+Leite, 2013.}
 
 \item{data}{a required dataset to search with.}
 
@@ -37,13 +33,18 @@ size adjusted BIC.}
 
 \item{minInd}{The minimum number of indicators per factor.}
 
-\item{niter}{The maximum number of iterations to all.}
+\item{niter}{The maximum number of iterations to use. "default" changes the number
+of iterations based on the algorithm used.}
 
 \item{parallel}{Whether to use the snowfall package for parallelization.
 Note that this is only applicable for the GA package at this time.}
 
+\item{missing}{Argument to be passed to cfa() as to what to do with missing
+values. Note: missing="fiml" can't be paired with CV=TRUE}
+
 \item{CV}{Whether to use cross-validation for choosing the best model. The
-default is to use fit indices without CV.}
+default is to use fit indices without CV.It is currently recommended to either
+use FALSE or "boot". Note that "boot" will take significantly longer.}
 
 \item{R}{If using bootstrap, how many samples to take? Default is 100}
 
@@ -57,13 +58,28 @@ before breaking.}
 \item{...}{Additional arguments to pass to cfa(). An example is
 is setting orth=FALSE,std.lv=TRUE.}
 }
+\value{
+fit the fit index
+
+solution the solution with the best fit
+
+out returned object from optimization algorithm
+}
 \description{
 This function houses a number of different heuristic optimization algorithms
     for specification search.
 }
 \examples{
 \dontrun{
-autoSEM()
+library(autoSEM)
+myData =  HolzingerSwineford1939[,7:15]
+
+f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
+
+out = autoSEM(method="tabu",data=myData,nfac=1,
+             varList=list(f1.vars),CV="boot",R=50,
+             criterion="RMSEA",minInd=3,niter=10)
+summary(out)
 }
 
 }

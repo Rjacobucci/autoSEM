@@ -2,9 +2,8 @@ Package: autoSEM
 Type: Package
 Title: Performs Specification Search in Structural Equation Models
 Version: 0.1.0
-Date: 2016-05-19
 Author: Ross Jacobucci
-Maintainer: Ross Jacobucci <rcjacobuc@gmail>
+Maintainer: Ross Jacobucci <rcjacobuc@gmail.com>
 Description: Implements multiple heuristic search algorithms for
     automatically creating structural equation models.
 License: GPL (>= 2)
@@ -14,10 +13,4 @@ Depends:
     snowfall
 Imports:
     GA
-Suggests:
-    rgenoud,
-    tabuSearch,
-    RcppDE,
-    hydroPSO,
-    NMOF
 RoxygenNote: 5.0.1

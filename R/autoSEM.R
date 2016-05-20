@@ -4,15 +4,11 @@
 #'
 #' @param method which optimization algorithm to use. Currently, it is only
 #'        recommended to use "GA" for the genetic algorithm from the GA
-#'        package, "aco_rj", an implementation of the ant colony
-#'        algorithm by Ross Jacobucci, and "tabu_rj", an implementation of
+#'        package, "aco", an implementation of the ant colony
+#'        algorithm by Ross Jacobucci, and "tabu", an implementation of
 #'        the Tabu search procedure by Ross Jacobucci. The latter two
 #'        algorithms are based on the book chapter by Marcoulides &
-#'        Leite, 2013. The other methods: "pso", "NMOF", "DEoptim",
-#'        "tabuSearch", and "rgenoud" are all based on real-value
-#'        optimization, not binary strings. This substantially increases
-#'        the computation time and these methods are not currently
-#'        recommended for use.
+#'        Leite, 2013.
 #'
 #' @param data a required dataset to search with.
 #' @param nfac the number of factors to test.
@@ -23,11 +19,15 @@
 #'        "RMSEA","AIC", "BIC", and "BIC2", which is the sample
 #'        size adjusted BIC.
 #' @param minInd The minimum number of indicators per factor.
-#' @param niter The maximum number of iterations to all.
+#' @param niter The maximum number of iterations to use. "default" changes the number
+#'        of iterations based on the algorithm used.
 #' @param parallel Whether to use the snowfall package for parallelization.
 #'        Note that this is only applicable for the GA package at this time.
+#' @param missing Argument to be passed to cfa() as to what to do with missing
+#'        values. Note: missing="fiml" can't be paired with CV=TRUE
 #' @param CV Whether to use cross-validation for choosing the best model. The
-#'        default is to use fit indices without CV.
+#'        default is to use fit indices without CV.It is currently recommended to either
+#'        use FALSE or "boot". Note that "boot" will take significantly longer.
 #' @param R If using bootstrap, how many samples to take? Default is 100
 #' @param min.improve Number of iterations to wait for improvement
 #'        before breaking.
@@ -35,24 +35,37 @@
 #' @param std.lv Defaults to true. So lavaan uses all variables for each factor
 #' @param ... Additional arguments to pass to cfa(). An example is
 #'        is setting orth=FALSE,std.lv=TRUE.
+#' @return fit the fit index
+#' @return solution the solution with the best fit
+#' @return out returned object from optimization algorithm
 #' @keywords autoSEM
 #' @export
 #' @import lavaan
 #' @import snowfall
 #' @import GA
+#' @importFrom stats cov dchisq rbinom runif
 #' @examples
 #' \dontrun{
-#' autoSEM()
+#' library(autoSEM)
+#' myData =  HolzingerSwineford1939[,7:15]
+#'
+#' f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
+#'
+#' out = autoSEM(method="tabu",data=myData,nfac=1,
+#'              varList=list(f1.vars),CV="boot",R=50,
+#'              criterion="RMSEA",minInd=3,niter=10)
+#' summary(out)
 #'}
 #'
-autoSEM <- function(method="tabuSearch",
+autoSEM <- function(method="GA",
                     data=NULL,
                     nfac=NULL,
                     varList=NULL,
                     criterion="BIC",
                     minInd=3,
-                    niter=30,
+                    niter="default",
                     parallel="no",
+                    missing="listwise",
                     CV="boot",
                     R=100,
                     min.improve=niter,
@@ -62,10 +75,25 @@ autoSEM <- function(method="tabuSearch",
   ret <- list()
   options(warn=2)
 
+  if(missing == "fiml" & CV == TRUE){
+    stop("Can't pair fiml with cross-validation at this time")
+  }
+
+
+  if(niter == "default"){
+    if(method=="tabu"){
+      niter=length(varList)*20
+    }else if(method =="aco"){
+      niter=100
+    }else if(method=="GA"){
+      niter=20
+    }
+  }
+
   if(is.null(seed)==TRUE) seed = round(runif(1,0,1)*10000000,0)
 
-  if(method != "GA" & method != "tabu_rj" & method != "aco_rj"){
-    stop("Only GA, tabu_rj, and aco_rj are working well at this time.")
+ if(method != "GA" & method != "tabu" & method != "aco"){
+    stop("Only GA, tabu, and aco are currently implemented")
   }
 
   if(CV==T){
@@ -91,9 +119,6 @@ autoSEM <- function(method="tabuSearch",
 
     lll = varList
 
-    if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
-      string = round(string)
-    }
 
     jjj = list()
     for(i in 1:nfac){
@@ -110,9 +135,7 @@ autoSEM <- function(method="tabuSearch",
           if(sum(jjj[[i]]) < minInd){
             if(method=="GA"){
               -44
-            }else if(method=="tabuSearch"){
-              0
-            }else if(method=="rgenoud" | method=="tabu_rj" | method=="aco_rj"){
+            }else if(method=="tabu" | method=="aco"){
               1e10
             }
           }
@@ -163,17 +186,13 @@ autoSEM <- function(method="tabuSearch",
     rmsea = function(ncp,df) sqrt(ncp/df)
 
 
-    outt = try(lavaan::cfa(fmld,data_train,std.lv=std.lv,...),silent=TRUE)
-
+    outt = try(lavaan::cfa(fmld,data_train,std.lv=std.lv,missing=missing,...),silent=TRUE)
+    #summary(outt)
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
         #return(-99999999)
         -1e10
-      }else if(method=="tabuSearch"){
-        #return(0)
-        0
-      }else if(method == "rgenoud" | method=="pso" | method=="NMOF" |
-               method=="DEoptim" | method=="tabu_rj" | method=="aco_rj"){
+      }else if(method=="tabu" | method=="aco"){
         1e10
       }
       }else{
@@ -201,9 +220,9 @@ autoSEM <- function(method="tabuSearch",
         RMSEA = rmsea(NCP,df)
       }else if(CV == "boot"){
 
-        if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
-          stop("Only use CV=F with BIC, BIC2, or AIC")
-        }
+       # if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
+        #  stop("Only use CV=F with BIC, BIC2, or AIC")
+       # }
 
        # RMSEA.rep <- rep(NA,R)
         #NCP.rep <- rep(NA,R)
@@ -221,23 +240,32 @@ autoSEM <- function(method="tabuSearch",
         #}
         chisq.boot = rep(NA,R)
         NCP.rep = rep(NA,R)
-        RMSEA.rep = rep(NA,R)
+        #RMSEA.rep = rep(NA,R)
 
-        fit.boot = try(bootstrapLavaan(fit,type="yuan",R=R,FUN=fitmeasures,fit.measures=c("chisq","rmsea")),silent=TRUE)
+        fit.boot = try(lavaan::bootstrapLavaan(outt,type="yuan",R=R,FUN=fitmeasures,
+                                       fit.measures=c("chisq","rmsea","bic","bic2","aic")),silent=TRUE)
+        #print(fit.boot)
         if(inherits(fit.boot, "try-error")) {
           NCP = 9987
           RMSEA = 9987
+          bic <- 1e10
+          bic2 = 1e10
+          aic = 1e10
         }else{
           RMSEA <- mean(fit.boot[,2])
           for(i in 1:R){
             NCP.rep[i] = d(fit.boot[i,1],df,N)
           }
+          NCP <- mean(NCP.rep)
+          bic <- mean(fit.boot[,3])
+          bic2 <- mean(fit.boot[,4])
+          aic <- mean(fit.boot[,5])
         }
-        NCP <- mean(NCP.rep)
+
 
       }
 
-    if(method == "tabuSearch" | method== "GA"){
+    if(method== "GA"){
       if(criterion=="BIC"){
         return_val = 100 /bic
       }else if(criterion=="BIC2"){
@@ -245,13 +273,11 @@ autoSEM <- function(method="tabuSearch",
       }else if(criterion=="AIC"){
         return_val = 100 /aic
       }else if(criterion=="RMSEA"){
-        return_val= RMSEA
+        return_val= 100/RMSEA
       }else if(criterion=="NCP"){
-        return_val = NCP
+        return_val = 100/NCP
       }
-    }else if(method=="rgenoud" | method == "pso" |
-             method == "NMOF" | method=="DEoptim" |
-             method=="tabu_rj" | method=="aco_rj"){
+    }else if(method=="tabu" | method=="aco"){
       if(criterion=="BIC"){
         return_val = bic
       }else if(criterion=="BIC2"){
@@ -269,13 +295,7 @@ autoSEM <- function(method="tabuSearch",
       if(method=="GA"){
         return(return_val)
         #10
-      }else if(method=="tabuSearch"){
-        return(return_val)
-        #10
-      }else if(method=="rgenoud" | method=="pso" | method=="NMOF" | method=="DEoptim"){
-        return(return_val)
-        #10
-      }else if(method=="tabu_rj" | method=="aco_rj"){
+      }else if(method=="tabu" | method=="aco"){
         return(return_val)
       }
     }
@@ -288,74 +308,19 @@ autoSEM <- function(method="tabuSearch",
 
   if(method=="GA"){
    # if(parallel=="no"){
-      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
+      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=F,maxiter=niter,run=10)
       # }else if(parallel=="yes"){
       #   out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
       # }
-  }else if(method=="tabuSearch"){
-
-    if (!requireNamespace("tabuSearch", quietly = TRUE)) {
-      stop("tabuSearch needed for this function to work. Please install it.",
-           call. = FALSE)
-    }
-
-    out = tabuSearch::tabuSearch(size = p_length*nfac, iters = niter,objFunc = fitness,listSize=5)
-  }else if(method=="tabu_rj"){
-    out = tabu_rj(size=p_length*nfac,iters=niter,fitness=fitness,min.improve=min.improve,seed=seed)
-  }else if(method=="aco_rj"){
-    out = aco_rj(size=p_length*nfac,iters=niter,fitness=fitness,
+  }else if(method=="tabu"){
+    out = tabu(size=p_length*nfac,iters=niter,fitness=fitness,min.improve=min.improve,seed=seed)
+  }else if(method=="aco"){
+    out = aco(size=p_length*nfac,iters=niter,fitness=fitness,
                  criterion=criterion,min.improve=min.improve,seed=seed)
-  }else if(method=="rgenoud"){
-
-    if (!requireNamespace("rgenoud", quietly = TRUE)) {
-      stop("rgenoud needed for this function to work. Please install it.",
-           call. = FALSE)
-    }
-
-    dom = cbind(rep(0,p_length*nfac),rep(1,p_length*nfac))
-    out = rgenoud::genoud(fitness,nvars=p_length*nfac,Domains=dom,boundary=2,print.level=0)
-  }else if(method=="pso"){
-
-    if (!requireNamespace("hydroPSO", quietly = TRUE)) {
-      stop("hydroPSO needed for this function to work. Please install it.",
-           call. = FALSE)
-    }
-
-    out = hydroPSO::hydroPSO(rep(0.5,p_length*nfac),fitness,
-                             lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac))
-
-    #out = pso::psoptim(rep(0.5,p_length*nfac),fitness,
-    #                         lower=0,upper=1)
-  }else if(method=="NMOF"){
-
-    if (!requireNamespace("NMOF", quietly = TRUE)) {
-      stop("NMOF needed for this function to work. Please install it.",
-           call. = FALSE)
-    }
-
-    #fitness(rep(0.5,p_length*nfac))
-    algo=list(nB=p_length*nfac)
-    out = NMOF::GAopt(fitness,algo=algo)
-  }else if(method=="DEoptim"){
-
-    if (!requireNamespace("RcppDE", quietly = TRUE)) {
-      stop("RcppDE needed for this function to work. Please install it.",
-           call. = FALSE)
-    }
-
-    out = RcppDE::DEoptim(fitness,lower=rep(0,p_length*nfac),upper=rep(1,p_length*nfac),
-                          control=RcppDE::DEoptim.control(NP=9000))
   }
 
-  if(method=="GA"){
-    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
-      ret$fit = 100/out@fitnessValue
-    }else if(criterion=="RMSEA"){
-      #ret$fit = 1- out$fitness
-    }else if(criterion=="NCP"){
-      #ret$fit = out$fitness
-    }
-  }else if(method=="rgenoud" | method=="pso" | method=="tabu_rj" | method=="aco_rj"){
+  fit= NULL
+  if(method=="tabu" | method=="aco"){
     if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
       ret$fit = out$value
     }else if(criterion=="RMSEA"){
@@ -363,42 +328,26 @@ autoSEM <- function(method="tabuSearch",
     }else if(criterion=="NCP"){
       ret$fit = out$value
     }
-  }else if(method=="tabuSearch"){
-    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
-      ret$fit = 100/max(out$eUtilityKeep)
-    }else if(criterion=="RMSEA"){
-      ret$fit = 1-max(out$eUtilityKeep)
-    }
-  }else if(method=="NMOF"){
-    if(criterion=="BIC" | criterion=="BIC2" | criterion=="AIC"){
-      ret$fit = out$OFvalue
-    }else if(criterion=="RMSEA"){
-      ret$fit = out$OFvalue
-    }
   }
 
-  if(method == "GA" | method == "rgenoud" | method=="pso" |
-     method=="NMOF" | method=="aco_rj" | method=="tabu_rj"){
+  if(method == "GA" | method=="aco" | method=="tabu"){
     ret$out = out
   }
 
-  if(method=="tabuSearch"){
-    ret$solution = out$configKeep[out$eUtilityKeep == max(out$eUtilityKeep),]
-  }else if(method=="GA"){
+  if(method=="GA"){
     ret$solution = out@solution
     if(criterion=="BIC"){
       ret$fit <- 100/out@fitnessValue
     }else{
-      ret$fit <- out@fitnessValue
+      ret$fit <- 100/out@fitnessValue
     }
 
-  }else if(method=="rgenoud" | method=="pso"){
-    ret$solution = round(out$par)
-  }else if(method=="NMOF"){
-    ret$solution = out$xbest
-  }else if(method=="tabu_rj" | method=="aco_rj"){
+  }else if(method=="tabu" | method=="aco"){
     ret$solution = out$solution
   }
 
-  ret
+
+  ret$call <- match.call()
+  class(ret) <- "autoSEM"
+  return(ret)
 }

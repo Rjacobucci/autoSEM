@@ -1,5 +1,5 @@
 
-aco_rj <- function(size, iters,fitness,criterion,min.improve,seed){
+aco <- function(size, iters,fitness,criterion,min.improve,seed){
 
  # if(criterion == "BIC" | criterion == "BIC2" | criterion == "AIC"){
   #  stop("BIC is not working for aco")
