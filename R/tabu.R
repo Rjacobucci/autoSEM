@@ -17,6 +17,9 @@ tabu <- function(size, iters,fitness,min.improve,seed){
 while(count < iters){
 
   count=count+1
+  #print(cat("iters = ",count))
+
+  cat(paste(count," ")); flush.console()
 
   string.mat = matrix(NA,length(string),length(string))
 

@@ -24,6 +24,7 @@ aco <- function(size, iters,fitness,criterion,min.improve,seed){
 while(count < iters){
 
   count=count+1
+  cat(paste(count," ")); flush.console()
 
 
     current.fit = fitness(string)

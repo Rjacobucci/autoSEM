@@ -70,17 +70,15 @@ This function houses a number of different heuristic optimization algorithms
     for specification search.
 }
 \examples{
-\dontrun{
 library(autoSEM)
 myData =  HolzingerSwineford1939[,7:15]
 
 f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 
-out = autoSEM(method="tabu",data=myData,nfac=1,
-             varList=list(f1.vars),CV="boot",R=50,
-             criterion="RMSEA",minInd=3,niter=10)
+out = autoSEM(method="GA",data=myData,nfac=1,
+             varList=list(f1.vars),CV=FALSE,
+             criterion="RMSEA",minInd=3,niter=1)
 summary(out)
-}
 
 }
 \keyword{autoSEM}

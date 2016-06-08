@@ -68,11 +68,9 @@ f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 rrr = list(f1.vars)
 facs <- 1:4
 
-
 out = multFac(facList=facs,parallel="yes",ncore=4,method="GA",
             data=myData,orth=FALSE,CV=FALSE,std.lv=TRUE,
             varList=rrr,criterion="RMSEA",niter="default")
-out
 }
 }
 \keyword{multFac}

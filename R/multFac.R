@@ -43,11 +43,9 @@
 #' rrr = list(f1.vars)
 #' facs <- 1:4
 #'
-#'
 #' out = multFac(facList=facs,parallel="yes",ncore=4,method="GA",
 #'             data=myData,orth=FALSE,CV=FALSE,std.lv=TRUE,
 #'             varList=rrr,criterion="RMSEA",niter="default")
-#' out
 #'}
 
 

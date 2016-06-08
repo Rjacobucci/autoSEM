@@ -45,17 +45,15 @@
 #' @import GA
 #' @importFrom stats cov dchisq rbinom runif
 #' @examples
-#' \dontrun{
 #' library(autoSEM)
 #' myData =  HolzingerSwineford1939[,7:15]
 #'
 #' f1.vars <- c("x1","x2","x3","x4","x5","x6","x7","x8","x9")
 #'
-#' out = autoSEM(method="tabu",data=myData,nfac=1,
-#'              varList=list(f1.vars),CV="boot",R=50,
-#'              criterion="RMSEA",minInd=3,niter=10)
+#' out = autoSEM(method="GA",data=myData,nfac=1,
+#'              varList=list(f1.vars),CV=FALSE,
+#'              criterion="RMSEA",minInd=3,niter=1)
 #' summary(out)
-#'}
 #'
 autoSEM <- function(method="GA",
                     data=NULL,
@@ -74,6 +72,7 @@ autoSEM <- function(method="GA",
                     ...){
   ret <- list()
   options(warn=2)
+
 
   if(missing == "fiml" & CV == TRUE){
     stop("Can't pair fiml with cross-validation at this time")
@@ -298,6 +297,7 @@ autoSEM <- function(method="GA",
       }else if(method=="tabu" | method=="aco"){
         return(return_val)
       }
+
     }
    # 10
   }
@@ -308,7 +308,7 @@ autoSEM <- function(method="GA",
 
   if(method=="GA"){
    # if(parallel=="no"){
-      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=F,maxiter=niter,run=10)
+      out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,run=10)
       # }else if(parallel=="yes"){
       #   out = GA::ga("binary", fitness = fitness, nBits = p_length*nfac,monitor=T,maxiter=niter,parallel=TRUE)
       # }
