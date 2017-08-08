@@ -11,9 +11,12 @@
 #'        Leite, 2013.
 #'
 #' @param data a required dataset to search with.
+#' @param type Whether using a factor model or or regression for subset selection. Options
+#'        are "fac" or "reg"
 #' @param nfac the number of factors to test.
 #' @param varList list containing the names of the
 #'        variables to use from the dataset.
+#' @param yList List containing the name of the outcome in a regression model.
 #' @param criterion The fit index to use as a criterion for
 #'        choosing the best model. Current options are "NCP",
 #'        "RMSEA","AIC", "BIC", and "BIC2", which is the sample
@@ -57,8 +60,10 @@
 #'
 autoSEM <- function(method="GA",
                     data=NULL,
+                    type="fac",
                     nfac=NULL,
                     varList=NULL,
+                    yList = NULL,
                     criterion="BIC",
                     minInd=3,
                     niter="default",
@@ -72,6 +77,10 @@ autoSEM <- function(method="GA",
                     ...){
   ret <- list()
   options(warn=2)
+
+  if(type == "reg"){
+    warning("type=reg is new and not working as well right now")
+  }
 
 
   if(missing == "fiml" & CV == TRUE){
@@ -113,6 +122,12 @@ autoSEM <- function(method="GA",
 #    data_test = data[ids2,]
 #  }
 
+  p = length(unique(unlist(varList)))
+
+
+  d = function(chisq,df,N) max(0,(chisq -df)/(N-1))
+  rmsea = function(ncp,df) sqrt(ncp/df)
+
 
   fitness <- function(string) {
 
@@ -120,6 +135,11 @@ autoSEM <- function(method="GA",
 
 
     jjj = list()
+
+  ooo =  list()
+
+  if(type=="fac"){
+
     for(i in 1:nfac){
       jjj[[i]] = lll
     }
@@ -130,21 +150,15 @@ autoSEM <- function(method="GA",
       string = string[-(1:length(lll[[1]]))]
     }
 
-        for(i in 1:length(jjj)){
-          if(sum(jjj[[i]]) < minInd){
-            if(method=="GA"){
-              -44
-            }else if(method=="tabu" | method=="aco"){
-              1e10
-            }
-          }
+    for(i in 1:length(jjj)){
+      if(sum(jjj[[i]]) < minInd){
+        if(method=="GA"){
+          -44
+        }else if(method=="tabu" | method=="aco"){
+          1e10
         }
-
-
-
-
-
-  ooo =  list()
+      }
+    }
 
     for(i in 1:nfac){
           facc = paste("f",i,sep="")
@@ -159,33 +173,34 @@ autoSEM <- function(method="GA",
       ooo[[i]] = paste(paste(facc," =~ "), ooo[[i]])
     }
 
-
-   # ppp <- list()
-   # for(i in 1:nfac){
-    #  ppp[[i]] = gsub("x","NA*x",ooo[[i]])
-   # }
-
-
-   # for(uu in 1:length(start)){
-   #   ppp[[1]] = gsub("NA",start[uu],ppp[[1]])
-    #  ppp[[1]]
-    #}
-
-
-
     fmld <- ""
     for(jj in 1:nfac){
       fmld <- paste(fmld,ooo[[jj]],sep="\n")
     }
 
-    p = length(unique(unlist(varList)))
+    outt = try(lavaan::cfa(fmld,data_train,std.lv=std.lv,missing=missing,test="standard",...),silent=TRUE)
+  }else if(type=="reg"){
+
+    outcome = unlist(yList)
+    uu = gsub("1","start(1)*",string)
+    uu = gsub("0","0*",uu)
+    uu2 = paste(uu,lll[[1]],sep="")
+    ooo =  paste0(uu2,collapse="+")
+
+    ooo = paste(paste(outcome," ~ "), ooo)
+
+    fmld <- ""
+
+      fmld <- paste(outcome,ooo,sep="\n")
 
 
-    d = function(chisq,df,N) max(0,(chisq -df)/(N-1))
-    rmsea = function(ncp,df) sqrt(ncp/df)
+      outt = try(lavaan::sem(fmld,data_train,missing=missing,...),silent=TRUE)
+
+  }
 
 
-    outt = try(lavaan::cfa(fmld,data_train,std.lv=std.lv,missing=missing,...),silent=TRUE)
+
+
     #summary(outt)
     if(inherits(outt, "try-error")) {
       if(method=="GA"){
@@ -305,6 +320,10 @@ autoSEM <- function(method="GA",
 
 
   p_length = length(unlist(varList))
+
+  if(type=="reg"){
+    nfac=1
+  }
 
   if(method=="GA"){
    # if(parallel=="no"){

@@ -13,6 +13,9 @@
 #'        the Tabu search procedure by Ross Jacobucci. The latter two
 #'        algorithms are based on the book chapter by Marcoulides &
 #'        Leite, 2013.
+#' @param type Whether using a factor model or or regression for subset selection. Options
+#'        are "fac" or "reg"
+#' @param yList List containing the name of the outcome in a regression model.
 #' @param missing Argument to be passed to cfa() as to what to do with missing
 #'        values. Note: missing="fiml" can't be paired with CV=TRUE
 #' @param data a required dataset to search with.
@@ -54,9 +57,11 @@ multFac <- function(facList,
                     parallel="no",
                     ncore=1,
                     method="GA",
+                    type="fac",
                     missing="listwise",
                     data=NULL,
                     varList=NULL,
+                    yList=NULL,
                     criterion="BIC",
                     minInd=3,
                     niter="default",
@@ -93,9 +98,10 @@ multFac <- function(facList,
 
       ret.auto <- function(facs){
 
-        ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,,std.lv=std.lv,missing=missing,
+        ret = autoSEM(method=method,data=data,type=type,nfac=facs,CV=CV,test="standard",
+                      std.lv=std.lv,missing=missing,
                       ...,
-                      varList=varList,criterion=criterion,minInd=minInd,
+                      varList=varList,yList=yList,criterion=criterion,minInd=minInd,
                       niter=niter,min.improve=min.improve)
         ret
       }
@@ -114,9 +120,10 @@ multFac <- function(facList,
 
     ret.auto <- function(facs){
 
-      ret = autoSEM(method=method,data=data,nfac=facs,CV=CV,,std.lv=std.lv,missing=missing,
+      ret = autoSEM(method=method,data=data,ype=type,nfac=facs,CV=CV,test="standard",
+                    std.lv=std.lv,missing=missing,
                     ...,
-                    varList=varList,criterion=criterion,minInd=minInd,
+                    varList=varList,yList=yList,criterion=criterion,minInd=minInd,
                     niter=niter,min.improve=min.improve)
       ret
     }
@@ -129,9 +136,10 @@ multFac <- function(facList,
     out = list()
 
     for(y in 1:length(facList)){
-      out[[y]] = autoSEM(method=method,data=data,nfac=facList[y],CV=CV,,std.lv=std.lv,missing=missing,
+      out[[y]] = autoSEM(method=method,type=type,data=data,nfac=facList[y],test="standard",
+                         CV=CV,std.lv=std.lv,missing=missing,
                          ...,
-                         varList=varList,criterion=criterion,minInd=minInd,
+                         varList=varList,yList=yList,criterion=criterion,minInd=minInd,
                          niter=niter,min.improve=min.improve)
     }
   }
